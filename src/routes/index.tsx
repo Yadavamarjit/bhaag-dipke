@@ -29,17 +29,6 @@ function Home() {
   <div id="speed-fx" className="hud-layer speed-lines opacity-0 transition-opacity duration-300"></div>
   <div id="flight-fx" className="hud-layer sky-flight-fx opacity-0 transition-opacity duration-500"></div>
 
-  
-  <div id="flying-banner" className="hud-layer flex flex-col items-center justify-start pt-20 hidden">
-    <div className="glass-card px-6 py-2.5 rounded-2xl text-center border-2 border-cyan-400 bg-sky-950/80 shadow-2xl animate-pulse">
-      <div className="text-xs font-bungee tracking-widest text-cyan-300 flex items-center justify-center gap-2">
-        <span>🚀</span> SHAKTIMAAN CHAI JETPACK ACTIVATED! <span>✨</span>
-      </div>
-      <div className="text-xl sm:text-2xl font-hindi-style text-yellow-300 font-extrabold mt-0.5">
-        उड़ता Dipke! आसमान में समोसे लूटो!
-      </div>
-    </div>
-  </div>
 
   
   {/* 3-2-1 Countdown Animation Overlay */}

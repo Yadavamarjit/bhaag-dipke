@@ -2675,7 +2675,6 @@ import * as THREE from "three";
       if (caughtTrio) caughtTrio.visible = false;
 
       if (jetpackModel) jetpackModel.visible = false;
-      document.getElementById('flying-banner').classList.add('hidden');
       document.getElementById('flight-fx').classList.add('opacity-0');
       document.getElementById('speed-fx').classList.add('opacity-0');
       document.getElementById('hud-powerup').classList.add('hidden');
@@ -3038,11 +3037,7 @@ import * as THREE from "three";
       player.powerupTimer = player.flightDuration;
 
       if (jetpackModel) jetpackModel.visible = true;
-      document.getElementById('flying-banner').classList.remove('hidden');
       document.getElementById('flight-fx').classList.remove('opacity-0');
-      setTimeout(() => {
-        document.getElementById('flying-banner').classList.add('hidden');
-      }, 2600);
 
       audio.playWoo();
       audio.playFlightRocket();
@@ -3344,7 +3339,6 @@ import * as THREE from "three";
       player.isFlying = false;
       if (jetpackModel) jetpackModel.visible = false;
       document.getElementById('flight-fx').classList.add('opacity-0');
-      document.getElementById('flying-banner').classList.add('hidden');
 
       audio.playCrash();
       audio.playPoliceSiren();
