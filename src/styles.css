@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+@theme {
+  --color-saffron: #f59e0b;
+  --color-marigold: #fbbf24;
+  --color-maroon: #991b1b;
+  --color-night: #120f17;
+  --font-sans: "Outfit", system-ui, sans-serif;
+  --font-display: "Bungee", system-ui, sans-serif;
+  --font-hindi: "Yatra One", cursive, sans-serif;
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+    background: #120f17;
+  }
+}
+
+    .game-root, .game-root * {
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #f59e0b;
+      font-family: 'Outfit', sans-serif;
+    }
+    .font-hindi-style {
+      font-family: 'Yatra One', cursive, sans-serif;
+    }
+    .font-bungee {
+      font-family: 'Bungee', cursive, sans-serif;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      z-index: 1;
+    }
+    .hud-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .interactive {
+      pointer-events: auto;
+    }
+    .glass-card {
+      background: rgba(18, 15, 23, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 2px solid rgba(255, 179, 71, 0.4);
+    }
+    .pulse-glow {
+      animation: pulseGlow 1.8s infinite;
+    }
+    .boot-runner {
+      display: inline-block;
+      animation: bootRun 0.45s linear infinite;
+    }
+    .boot-bar {
+      background-image: linear-gradient(90deg, #fbbf24, #f97316, #fde68a, #f97316);
+      background-size: 220% 100%;
+      animation: bootShine 1s linear infinite;
+    }
+    @keyframes bootRun {
+      0% { transform: translateX(0) rotate(-12deg); }
+      50% { transform: translateX(5px) rotate(12deg); }
+      100% { transform: translateX(0) rotate(-12deg); }
+    }
+    @keyframes bootShine {
+      0% { background-position: 100% 0; }
+      100% { background-position: -100% 0; }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 15px rgba(255, 153, 51, 0.6); }
+      50% { box-shadow: 0 0 35px rgba(255, 69, 0, 0.9); }
+    }
+    .speed-lines {
+      background: radial-gradient(circle, transparent 60%, rgba(255, 200, 80, 0.25) 100%);
+    }
+    .sky-flight-fx {
+      background: radial-gradient(circle, transparent 50%, rgba(56, 189, 248, 0.3) 100%);
+      box-shadow: inset 0 0 50px rgba(14, 165, 233, 0.45);
+    }
+    .police-siren-border {
+      animation: policeFlash 0.5s infinite alternate;
+    }
+    @keyframes policeFlash {
+      0% { border-color: rgba(239, 68, 68, 0.95); box-shadow: 0 0 30px rgba(239, 68, 68, 0.7); }
+      100% { border-color: rgba(59, 130, 246, 0.95); box-shadow: 0 0 30px rgba(59, 130, 246, 0.7); }
+    }
+    .caught-vignette {
+      background: radial-gradient(circle, transparent 40%, rgba(220, 38, 38, 0.55) 85%, rgba(153, 27, 27, 0.9) 100%);
+    }
+  
