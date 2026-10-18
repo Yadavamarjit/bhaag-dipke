@@ -10,11 +10,48 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" },
-      { title: APP_NAME },
+      { title: "Bhaag Dipke Bhaag — Delhi Protest & Police Chase 3D Runner | Desi Subway Surfers" },
       { name: "theme-color", content: "#f59e0b" },
       {
         name: "description",
-        content: "Bhaag Dipke Bhaag — a Delhi endless runner. Dodge buses, autos, and the police.",
+        content:
+          "Play Bhaag Dipke Bhaag online! Help Dipke escape the Delhi Police through Jantar Mantar protests, dharna barricades, DTC buses, and Delhi Metro trains. The ultimate Indian 3D endless runner inspired by Subway Surfers with desi meme sound effects. Free to play in browser with no download!",
+      },
+      {
+        name: "keywords",
+        content:
+          "Bhaag Dipke Bhaag, Dipke, Dipke game, Dipke protest game, Jantar Mantar protest, Delhi protest runner, Dharna runner game, Delhi Police chase Dipke, Police vs Dipke, Subway Surfers, Subway Surfers India, Desi Subway Surfers, Subway Surfers online free, Indian 3D endless runner, Temple Run Delhi, Delhi Metro runner 3D, Yellow Line metro game, DTC bus dodge game, Police barricade jump game, धरने में फंस गए Dipke, बैरिकेड तोड़ दी Dipke, अरे Dipke भाई चालान कट गया, भाग दिपके भाग, दिपके गेम, जंतर मंतर प्रोटेस्ट गेम, Aree meme sound game, Ye le meme sound runner, Indian meme video game, Play endless runner online no download, Unblocked 3D runner game, Free browser runner mobile WebGL",
+      },
+      { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" },
+      { name: "application-name", content: "Bhaag Dipke Bhaag" },
+      { name: "author", content: "Amarjit Yadav" },
+      { name: "category", content: "Games / Endless Runner / Arcade" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "VideoGame",
+          name: "Bhaag Dipke Bhaag",
+          alternateName: ["Bhag Dipke Bhag", "Dipke Protest Runner", "Desi Subway Surfers"],
+          description:
+            "Help Dipke sprint away from the Delhi Police through Jantar Mantar protests, dharna barricades, yellow line metro trains, and DTC buses in this high-octane Indian 3D endless runner game.",
+          genre: ["Action", "Endless Runner", "Arcade", "Platformer", "Parody"],
+          gamePlatform: ["Web Browser", "Mobile Browser", "Desktop"],
+          applicationCategory: "Game",
+          operatingSystem: "Any",
+          inLanguage: ["en", "hi"],
+          playMode: "SinglePlayer",
+          keywords:
+            "Dipke, Bhaag Dipke Bhaag, protest runner, Delhi Police chase, Subway Surfers, Jantar Mantar, desi runner game",
+          offers: {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock",
+          },
+        }),
       },
     ],
     links: [
