@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { retainGame } from "@/game/runner";
 
 export const Route = createFileRoute("/")({ component: Home });
@@ -15,6 +15,9 @@ function queueStart() {
 }
 
 function Home() {
+  const [showHelp, setShowHelp] = useState(false);
+  const [showCredits, setShowCredits] = useState(false);
+
   useEffect(() => {
     const host = document.getElementById("game-canvas-container");
     if (!host) return;
@@ -125,13 +128,26 @@ function Home() {
         </h1>
       </div>
 
-      {/* Right: High Score Trophy Pill */}
-      <div className="glass-card gold-glow-border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-2xl flex items-center gap-2 shadow-xl text-right">
-        <div>
-          <div className="text-[9px] sm:text-[10px] uppercase font-bold text-amber-300/80 tracking-wider">Top Distance</div>
-          <div id="menu-best-dist" className="text-base sm:text-2xl font-bungee text-amber-400 leading-tight">0 m</div>
+      {/* Right: High Score & Help Button */}
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="glass-card gold-glow-border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-2xl flex items-center gap-2 shadow-xl text-right">
+          <div>
+            <div className="text-[9px] sm:text-[10px] uppercase font-bold text-amber-300/80 tracking-wider">Top Distance</div>
+            <div id="menu-best-dist" className="text-base sm:text-2xl font-bungee text-amber-400 leading-tight">0 m</div>
+          </div>
+          <span className="text-2xl sm:text-3xl filter drop-shadow">🏆</span>
         </div>
-        <span className="text-2xl sm:text-3xl filter drop-shadow">🏆</span>
+
+        {/* Quick Top Help Button */}
+        <button
+          type="button"
+          onClick={() => setShowHelp(true)}
+          className="glass-card gold-glow-border w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center text-lg sm:text-xl font-black text-yellow-300 hover:text-white hover:scale-105 active:scale-95 transition shadow-xl cursor-pointer"
+          title="How to Play / कैसे खेलें"
+          aria-label="How to play"
+        >
+          ❓
+        </button>
       </div>
     </div>
 
@@ -181,8 +197,241 @@ function Home() {
           <span id="audio-toggle-icon">🔊</span> Sound ON
         </button>
       </div>
+
+      {/* Third Action Bar: How to Play (?) & Credits & Dev */}
+      <div className="flex items-center justify-center gap-2 w-full">
+        <button
+          type="button"
+          onClick={() => setShowHelp(true)}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-yellow-400/40 bg-black/70 hover:bg-black/90 text-xs font-bold text-yellow-300 transition shadow-md active:scale-95 cursor-pointer"
+        >
+          <span className="text-sm">❓</span> How to Play
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowCredits(true)}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-amber-400/40 bg-black/70 hover:bg-black/90 text-xs font-bold text-amber-200 transition shadow-md active:scale-95 cursor-pointer"
+        >
+          <span className="text-sm">❤️</span> Credits &amp; Dev
+        </button>
+      </div>
+
+      {/* Subtle Entertainment Disclaimer Footer */}
+      <div className="text-center text-[10px] text-amber-100/60 font-semibold tracking-wide pt-0.5">
+        Pure Chill &amp; Entertainment • Dev:{" "}
+        <a
+          href="https://ydvamar.online"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-amber-300 underline font-bold hover:text-white transition"
+          onClick={(e) => e.stopPropagation()}
+        >
+          Yadav Amarjit (ydvamar.online) ↗
+        </a>
+      </div>
     </div>
   </div>
+
+  {/* =========================================================================
+      HELP & HOW TO PLAY MODAL (?)
+      ========================================================================= */}
+  {showHelp && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-5 select-none">
+      <div className="glass-card gold-glow-border relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl p-5 sm:p-6 text-left shadow-2xl text-white">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-yellow-500/30 mb-4">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl sm:text-3xl">❓</span>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bungee text-yellow-300 leading-tight">HOW TO PLAY</h2>
+              <p className="text-xs text-amber-200 font-hindi-style">खेलने के नियम एवं देसी ताकत</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowHelp(false)}
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center font-bold text-lg cursor-pointer transition active:scale-90"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Controls Section */}
+        <div className="mb-4">
+          <div className="text-xs font-bungee uppercase text-yellow-400 mb-2 flex items-center gap-1.5">
+            <span>🕹️</span> CONTROLS (नियंत्रण)
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+            <div className="bg-black/50 p-2.5 rounded-xl border border-white/10">
+              <div className="font-bold text-amber-300 mb-0.5">⬅️ ➡️ Lane Switch</div>
+              <div className="text-gray-300 text-[11px]">Swipe Left / Right or press <kbd className="px-1 py-0.5 bg-white/20 rounded font-mono">A</kbd> / <kbd className="px-1 py-0.5 bg-white/20 rounded font-mono">D</kbd></div>
+            </div>
+            <div className="bg-black/50 p-2.5 rounded-xl border border-white/10">
+              <div className="font-bold text-emerald-300 mb-0.5">⬆️ Jump (कूदें)</div>
+              <div className="text-gray-300 text-[11px]">Swipe Up or press <kbd className="px-1 py-0.5 bg-white/20 rounded font-mono">W</kbd> / <kbd className="px-1 py-0.5 bg-white/20 rounded font-mono">Space</kbd> to clear barricades</div>
+            </div>
+            <div className="bg-black/50 p-2.5 rounded-xl border border-white/10">
+              <div className="font-bold text-sky-300 mb-0.5">⬇️ Slide (फिसलें)</div>
+              <div className="text-gray-300 text-[11px]">Swipe Down or press <kbd className="px-1 py-0.5 bg-white/20 rounded font-mono">S</kbd> to duck under overhead barriers</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Collectibles Section */}
+        <div className="mb-4">
+          <div className="text-xs font-bungee uppercase text-yellow-400 mb-2 flex items-center gap-1.5">
+            <span>🥟</span> WHAT TO COLLECT (क्या उठाएं)
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div className="bg-black/50 p-2.5 rounded-xl border border-yellow-500/20 flex items-start gap-2.5">
+              <span className="text-2xl">🥟</span>
+              <div>
+                <div className="font-bold text-yellow-300">Hot Garam Samosa</div>
+                <div className="text-gray-300 text-[11px]">Delhi&apos;s street fuel! Boosts your score multiplier and keeps the chase going.</div>
+              </div>
+            </div>
+            <div className="bg-black/50 p-2.5 rounded-xl border border-amber-500/20 flex items-start gap-2.5">
+              <span className="text-2xl">⭐</span>
+              <div>
+                <div className="font-bold text-amber-300">Golden Samosa</div>
+                <div className="text-gray-300 text-[11px]">Rare delicacy! Awards +10 samosas in one crunchy bite.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Powerups Section */}
+        <div className="mb-4">
+          <div className="text-xs font-bungee uppercase text-yellow-400 mb-2 flex items-center gap-1.5">
+            <span>⚡</span> POWERUPS (देसी ताक़त)
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div className="bg-black/50 p-2.5 rounded-xl border border-sky-500/30 flex items-start gap-2.5">
+              <span className="text-2xl">🚀</span>
+              <div>
+                <div className="font-bold text-sky-300">Desi Jetpack</div>
+                <div className="text-gray-300 text-[11px]">Soar high into the Delhi sky with dual flames and collect samosa rings safely!</div>
+              </div>
+            </div>
+            <div className="bg-black/50 p-2.5 rounded-xl border border-amber-500/30 flex items-start gap-2.5">
+              <span className="text-2xl">☕</span>
+              <div>
+                <div className="font-bold text-amber-300">Garam Chai (2X Multiplier)</div>
+                <div className="text-gray-300 text-[11px]">Hot cutting tea that doubles all your score and samosas for 10 seconds!</div>
+              </div>
+            </div>
+            <div className="bg-black/50 p-2.5 rounded-xl border border-red-500/30 flex items-start gap-2.5">
+              <span className="text-2xl">🧲</span>
+              <div>
+                <div className="font-bold text-red-300">Samosa Magnet</div>
+                <div className="text-gray-300 text-[11px]">Pulls all delicious samosas from all 3 lanes directly towards Dipke!</div>
+              </div>
+            </div>
+            <div className="bg-black/50 p-2.5 rounded-xl border border-emerald-500/30 flex items-start gap-2.5">
+              <span className="text-2xl">🪖</span>
+              <div>
+                <div className="font-bold text-emerald-300">Protest Helmet Shield</div>
+                <div className="text-gray-300 text-[11px]">Protects Dipke from one obstacle crash or police catch without game over!</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Obstacles Section */}
+        <div className="mb-5">
+          <div className="text-xs font-bungee uppercase text-red-400 mb-2 flex items-center gap-1.5">
+            <span>🚧</span> DANGER OBSTACLES (खतरे)
+          </div>
+          <div className="bg-black/50 p-2.5 rounded-xl border border-red-500/30 text-xs text-gray-300 space-y-1">
+            <div>• <span className="font-bold text-white">Delhi Police Barricades</span>: Jump over or switch lanes to dodge.</div>
+            <div>• <span className="font-bold text-white">DTC Low-Floor Buses &amp; CNG Autos</span>: Huge vehicles blocking entire road lanes.</div>
+            <div>• <span className="font-bold text-white">Delhi Police &amp; RAF Officers</span>: Tripping or colliding lets them catch you!</div>
+          </div>
+        </div>
+
+        {/* Got It Button */}
+        <button
+          type="button"
+          onClick={() => setShowHelp(false)}
+          className="w-full py-3 rounded-2xl bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 text-black font-bungee text-base font-black uppercase tracking-wider hover:brightness-110 active:scale-95 transition cursor-pointer shadow-lg"
+        >
+          SAMJH GAYA / GOT IT! 👍
+        </button>
+      </div>
+    </div>
+  )}
+
+  {/* =========================================================================
+      CREDITS & DEVELOPER DISCLAIMER MODAL
+      ========================================================================= */}
+  {showCredits && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-5 select-none">
+      <div className="glass-card gold-glow-border relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl p-5 sm:p-6 text-center shadow-2xl text-white">
+        {/* Modal Close Button */}
+        <button
+          type="button"
+          onClick={() => setShowCredits(false)}
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center font-bold text-lg cursor-pointer transition active:scale-90"
+        >
+          ✕
+        </button>
+
+        {/* Title Header */}
+        <div className="inline-block bg-gradient-to-r from-red-600 via-amber-500 to-yellow-400 text-black font-bungee text-[10px] font-black px-3 py-0.5 rounded-full uppercase tracking-wider mb-2">
+          GAME CREDITS &amp; DISCLAIMER
+        </div>
+        <h2 className="text-2xl sm:text-3xl font-hindi-style text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 font-black mb-3">
+          आभार एवं मनोरंजन संदेश
+        </h2>
+
+        {/* Chilling & Entertainment Purpose Statement */}
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-400/40 text-left mb-4 shadow-inner">
+          <div className="flex items-center gap-2 text-yellow-300 font-bungee text-xs uppercase mb-1">
+            <span>🕊️</span> Pure Entertainment &amp; Chilling
+          </div>
+          <p className="text-xs text-amber-100/90 leading-relaxed">
+            This game was created <strong>purely for chilling, fun, and entertainment purposes</strong>! 
+            Keeping politics, news, and controversies aside, it is designed as a humorous, light-hearted tribute to Delhi&apos;s vibrant street culture, Connaught Place architecture, and classic desi arcade chases.
+          </p>
+        </div>
+
+        {/* Developer Card */}
+        <div className="p-4 rounded-2xl bg-black/60 border border-white/15 text-center mb-4">
+          <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-tr from-yellow-400 via-orange-500 to-red-600 p-0.5 shadow-lg mb-2">
+            <div className="w-full h-full rounded-full bg-neutral-900 flex items-center justify-center text-3xl">
+              👨‍💻
+            </div>
+          </div>
+          <div className="text-lg font-bungee text-white">YADAV AMARJIT</div>
+          <p className="text-xs text-amber-300 font-semibold mb-3">Full-Stack &amp; Systems Architect • Game Developer</p>
+
+          {/* Direct Portfolio Link Button */}
+          <a
+            href="https://ydvamar.online"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 text-black font-bungee text-xs font-black tracking-wider uppercase hover:brightness-110 active:scale-95 transition shadow-md"
+          >
+            <span>🌐</span> Visit Portfolio: ydvamar.online ↗
+          </a>
+        </div>
+
+        {/* Tech & Inspirations */}
+        <div className="text-[11px] text-gray-400 leading-normal mb-4">
+          Built with React 19, Three.js 3D WebGL, and Tailwind CSS. Inspired by Subway Surfers &amp; Central Delhi CP.
+        </div>
+
+        {/* Close Button */}
+        <button
+          type="button"
+          onClick={() => setShowCredits(false)}
+          className="w-full py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-xs font-bold text-white uppercase tracking-wider cursor-pointer active:scale-95 transition"
+        >
+          CLOSE / बंद करें
+        </button>
+      </div>
+    </div>
+  )}
 
   {/* =========================================================================
       GAME OVER: DELHI POLICE DIGITAL E-CHALLAN FIR SLIP
