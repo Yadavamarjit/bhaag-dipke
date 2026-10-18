@@ -3096,22 +3096,17 @@ import * as THREE from "three";
       camera.position.set(px + p.x, p.y + bob, pz + p.z);
       camera.lookAt(px + p.lx, p.ly, pz + p.lz);
 
-      const crossing = p.z > -1.15 && p.z < 2.6;
-      const showRunners = elapsed > 6.15 && !crossing;
-
-      if (showRunners) {
-        runnersShownTimer += dt;
-        if (runnersShownTimer >= 1.0 && !tehelkaPlayedInCutscene) {
-          tehelkaPlayedInCutscene = true;
-          audio.playIntroMeme();
-        }
-      }
-
-      if (dipkeGroup) dipkeGroup.visible = showRunners;
-      if (dipkeShadow) dipkeShadow.visible = showRunners;
+      if (dipkeGroup) dipkeGroup.visible = true;
+      if (dipkeShadow) dipkeShadow.visible = true;
       policeOfficers.forEach((c) => {
-        if (c.group) c.group.visible = showRunners;
+        if (c.group) c.group.visible = true;
       });
+
+      runnersShownTimer += dt;
+      if (runnersShownTimer >= 1.0 && !tehelkaPlayedInCutscene) {
+        tehelkaPlayedInCutscene = true;
+        audio.playIntroMeme();
+      }
 
       roadSegments.forEach(seg => {
         if (seg.position.z > player.z + SEGMENT_LENGTH) {
