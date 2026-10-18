@@ -2641,13 +2641,14 @@ import * as THREE from "three";
       const obstacleTypes = ['BUS', 'AUTO', 'BARRICADE'];
       const canSpawnObstacles = (player.distance >= 40);
 
-      // In the free open lane, occasionally spawn ONE single item (powerup or single bundle)
-      // Never spawn multiple bundles side-by-side or tightly packed
+      // In the free open lane, spawn items with 50% increased availability
       if (Math.random() < 0.12) {
         spawnPowerup(freeLane, zPos);
-      } else if (Math.random() < 0.28) {
-        // 80% reduction: only 28% of clusters have 1 single bundle in the free lane
-        spawnCashBundle(freeLane, zPos);
+      } else if (Math.random() < 0.45) {
+        // Increased cash availability by 50%
+        // Spawns 1 or 2 bundles in single file along the free lane (never across lanes)
+        const count = Math.random() < 0.35 ? 2 : 1;
+        spawnCashBundle(freeLane, zPos, count);
       }
 
       // In other lanes, spawn obstacles if distance allows
@@ -2676,10 +2677,9 @@ import * as THREE from "three";
     }
 
     function spawnSkyCourse(zPos) {
-      // Keep sky clean and high-FPS unless player is flying with jetpack
-      if (!player.isFlying && Math.random() > 0.15) return;
+      if (!player.isFlying && Math.random() > 0.22) return;
       const skyLane = Math.floor(Math.random() * 3);
-      if (Math.random() < 0.20) {
+      if (Math.random() < 0.30) {
         const rareCash = createCashBundleMesh(true);
         rareCash.position.set(LANES[skyLane], 8.5, zPos);
         scene.add(rareCash);
@@ -2692,11 +2692,13 @@ import * as THREE from "three";
       }
     }
 
-    function spawnCashBundle(lane, zPos) {
-      const cash = createCashBundleMesh(false);
-      cash.position.set(LANES[lane], 0.9, zPos);
-      scene.add(cash);
-      collectibles.push(cash);
+    function spawnCashBundle(lane, zPos, count = 1) {
+      for (let k = 0; k < count; k++) {
+        const cash = createCashBundleMesh(false);
+        cash.position.set(LANES[lane], 0.9, zPos + (k * 3.5));
+        scene.add(cash);
+        collectibles.push(cash);
+      }
     }
 
     function spawnSamosaTrail(lane, zPos) {
