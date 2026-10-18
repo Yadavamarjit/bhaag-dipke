@@ -1544,7 +1544,7 @@ import * as THREE from "three";
     // City Depth, Rooftop, Foliage & Skyline Geometries (Full 3D city from high camera angles)
     const cityGroundGeo = new THREE.PlaneGeometry(360, SEGMENT_LENGTH);
     const cpBuildingBlockGeo = new THREE.BoxGeometry(16.0, 11.5, SEGMENT_LENGTH);
-    const cpTerraceFloorGeo = new THREE.BoxGeometry(16.0, 0.35, SEGMENT_LENGTH);
+    const cpTerraceFloorGeo = new THREE.BoxGeometry(19.5, 0.35, SEGMENT_LENGTH);
     const cpTerraceParapetGeo = new THREE.BoxGeometry(0.35, 0.85, SEGMENT_LENGTH);
     const cpPenthouseGeo = new THREE.BoxGeometry(5.0, 2.8, 6.0);
     const sintexTankGeo = new THREE.CylinderGeometry(0.65, 0.65, 1.4, 10);
@@ -1655,62 +1655,62 @@ import * as THREE from "three";
       parapet.position.set(xBase - faceDir * 0.65, 12.25, 0);
       blockGroup.add(parapet);
 
-      // 5. Full 3D CP Building Block (16m deep structure behind the colonnade)
+      // 5. Full 3D CP Building Block (Placed cleanly BEHIND the colonnade walkway)
       const buildingBlock = new THREE.Mesh(cpBuildingBlockGeo, mats.cpWhite);
-      buildingBlock.position.set(xBase - faceDir * 7.5, 5.75, 0);
+      buildingBlock.position.set(xBase - faceDir * 10.9, 5.75, 0);
       buildingBlock.castShadow = true;
       buildingBlock.receiveShadow = true;
       blockGroup.add(buildingBlock);
 
-      // Terrace Gravel/Stone Floor
+      // Terrace Gravel/Stone Floor (spanning from facade architrave across the entire rooftop)
       const terrace = new THREE.Mesh(cpTerraceFloorGeo, mats.cpRoofGravel);
-      terrace.position.set(xBase - faceDir * 7.5, 11.55, 0);
+      terrace.position.set(xBase - faceDir * 9.4, 11.55, 0);
       terrace.receiveShadow = true;
       blockGroup.add(terrace);
 
       // Rear Parapet Border Wall on Terrace
       const backParapet = new THREE.Mesh(cpTerraceParapetGeo, mats.cpWhite);
-      backParapet.position.set(xBase - faceDir * 15.3, 12.0, 0);
+      backParapet.position.set(xBase - faceDir * 18.9, 12.0, 0);
       blockGroup.add(backParapet);
 
       // 6. Authentic Delhi Rooftop Details: Sintex Tanks, AC Chillers & Penthouse
       // Penthouse / Rooftop Stairwell Room
       const penthouse = new THREE.Mesh(cpPenthouseGeo, mats.cpWhite);
-      penthouse.position.set(xBase - faceDir * 7.5, 12.9, -12);
+      penthouse.position.set(xBase - faceDir * 10.9, 12.9, -12);
       blockGroup.add(penthouse);
 
       // Black Sintex Water Tanks on stands
       [-18, 8, 22].forEach(tz => {
         const stand = new THREE.Mesh(tankStandGeo, mats.cpPillarBase);
-        stand.position.set(xBase - faceDir * 11.0, 11.8, tz);
+        stand.position.set(xBase - faceDir * 13.5, 11.8, tz);
         blockGroup.add(stand);
 
         const tank = new THREE.Mesh(sintexTankGeo, mats.sintexBlack);
-        tank.position.set(xBase - faceDir * 11.0, 12.6, tz);
+        tank.position.set(xBase - faceDir * 13.5, 12.6, tz);
         blockGroup.add(tank);
       });
 
       // Rooftop AC Outdoor Chiller Units
       [-6, 14, -24].forEach(az => {
         const ac = new THREE.Mesh(acUnitGeo, mats.acChillerGrey);
-        ac.position.set(xBase - faceDir * 4.5, 12.1, az);
+        ac.position.set(xBase - faceDir * 6.5, 12.1, az);
         blockGroup.add(ac);
       });
 
       // Satellite Dish Antenna
       const dishStand = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.2, 6), mats.blackRubber);
-      dishStand.position.set(xBase - faceDir * 3.5, 12.2, 3);
+      dishStand.position.set(xBase - faceDir * 4.5, 12.2, 3);
       blockGroup.add(dishStand);
 
       const dish = new THREE.Mesh(dishAntennaGeo, mats.acChillerGrey);
-      dish.position.set(xBase - faceDir * 3.5, 12.7, 3);
+      dish.position.set(xBase - faceDir * 4.5, 12.7, 3);
       dish.rotation.x = 0.6;
       blockGroup.add(dish);
 
-      // 7. Lutyens' Delhi Lush Green Tree Canopies (Filling space behind the building)
+      // 7. Lutyens' Delhi Lush Green Tree Canopies (Behind the building block)
       for (let tz = -SEGMENT_LENGTH / 2 + 5; tz < SEGMENT_LENGTH / 2; tz += 11) {
         const canopy = new THREE.Mesh(lushCanopyGeo, mats.treeCanopyLush);
-        canopy.position.set(xBase - faceDir * (17.5 + ((Math.abs(tz) % 3) * 1.5)), 3.8 + ((Math.abs(tz) % 2) * 0.8), tz);
+        canopy.position.set(xBase - faceDir * (21.5 + ((Math.abs(tz) % 3) * 1.5)), 3.8 + ((Math.abs(tz) % 2) * 0.8), tz);
         blockGroup.add(canopy);
       }
 
@@ -1719,33 +1719,33 @@ import * as THREE from "three";
       if (towerVariant === 0) {
         // Sandstone Corporate Tower (e.g. Gopal Das / LIC style)
         const tower1 = new THREE.Mesh(skylineTower1Geo, mats.skylineSandstone);
-        tower1.position.set(xBase - faceDir * 36.0, 16.0, -14);
+        tower1.position.set(xBase - faceDir * 40.0, 16.0, -14);
         blockGroup.add(tower1);
 
         // Modern Glass Tower
         const tower2 = new THREE.Mesh(skylineTower2Geo, mats.skylineGlass);
-        tower2.position.set(xBase - faceDir * 44.0, 21.0, 14);
+        tower2.position.set(xBase - faceDir * 48.0, 21.0, 14);
         blockGroup.add(tower2);
       } else if (towerVariant === 1) {
         // Statesman House style tower with glass crown
         const tower3 = new THREE.Mesh(skylineTower3Geo, mats.skylineWhite);
-        tower3.position.set(xBase - faceDir * 38.0, 13.0, 0);
+        tower3.position.set(xBase - faceDir * 42.0, 13.0, 0);
         blockGroup.add(tower3);
 
         const crown = new THREE.Mesh(skylineCrownGeo, mats.skylineGlass);
-        crown.position.set(xBase - faceDir * 38.0, 27.5, 0);
+        crown.position.set(xBase - faceDir * 42.0, 27.5, 0);
         blockGroup.add(crown);
 
         const towerB = new THREE.Mesh(skylineTower1Geo, mats.skylineSandstone);
-        towerB.position.set(xBase - faceDir * 48.0, 16.0, 20);
+        towerB.position.set(xBase - faceDir * 52.0, 16.0, 20);
         blockGroup.add(towerB);
       } else {
         const towerC = new THREE.Mesh(skylineTower2Geo, mats.skylineSandstone);
-        towerC.position.set(xBase - faceDir * 40.0, 21.0, -8);
+        towerC.position.set(xBase - faceDir * 44.0, 21.0, -8);
         blockGroup.add(towerC);
 
         const towerD = new THREE.Mesh(skylineTower1Geo, mats.skylineWhite);
-        towerD.position.set(xBase - faceDir * 42.0, 16.0, 18);
+        towerD.position.set(xBase - faceDir * 46.0, 16.0, 18);
         blockGroup.add(towerD);
       }
 
