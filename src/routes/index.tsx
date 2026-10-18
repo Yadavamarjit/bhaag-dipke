@@ -60,26 +60,6 @@ function Home() {
     </div>
   </div>
 
-  <div id="cutscene-banner" className="hud-layer flex flex-col items-center justify-start pt-12 sm:pt-16 hidden">
-    <div className="glass-card police-siren-border px-6 py-3 rounded-2xl text-center max-w-md mx-4 animate-bounce">
-      <div className="flex items-center justify-center gap-2 text-red-400 font-bungee text-sm tracking-widest">
-        <span>🚨</span> DELHI POLICE IN CHASE! <span>🚨</span>
-      </div>
-      <div className="text-2xl sm:text-3xl font-hindi-style text-yellow-300 font-extrabold mt-1">
-        रुको Dipke! आज नहीं बचेगा!
-      </div>
-      <div className="text-xs text-amber-200 mt-1 font-semibold tracking-wide">
-        Delhi skyline. Get ready to run!
-      </div>
-    </div>
-    <button
-      type="button"
-      id="btn-skip-intro"
-      className="interactive mt-3 px-4 py-1.5 rounded-full bg-black/60 border border-amber-400/50 text-amber-300 font-bungee text-xs tracking-wider hover:bg-amber-500 hover:text-black transition shadow-lg active:scale-95"
-    >
-      SKIP INTRO ⏩
-    </button>
-  </div>
 
   <div id="hud" className="hud-layer flex flex-col justify-between p-3 sm:p-5 hidden">
     <div className="flex items-start justify-between w-full max-w-5xl mx-auto">

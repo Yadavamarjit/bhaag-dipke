@@ -2452,11 +2452,6 @@ import * as THREE from "three";
 
       bindClick('btn-start', startCutsceneIntro);
       bindClick('btn-restart', startCutsceneIntro);
-      bindClick('btn-skip-intro', () => {
-        if (currentGameState === STATE.CUTSCENE) {
-          startCountdown();
-        }
-      });
 
       const photoInput = document.getElementById('photo-input');
       if (photoInput) {
@@ -2513,36 +2508,8 @@ import * as THREE from "three";
     }
 
     function startCountdown() {
-      currentGameState = STATE.COUNTDOWN;
       countdownStep = 3;
       countdownTimer = 0;
-
-      camera.up.set(0, 1, 0);
-      camera.position.set(0, 4.2, player.z + 7.5);
-      camera.lookAt(0, 1.8, player.z - 12);
-
-      if (dipkeGroup) {
-        dipkeGroup.visible = true;
-        dipkeGroup.position.set(player.x, 0, player.z);
-        dipkeGroup.rotation.set(0, 0, 0);
-      }
-      if (dipkeShadow) dipkeShadow.visible = true;
-      policeOfficers.forEach((c) => {
-        if (c.group) {
-          c.group.visible = true;
-          c.group.position.set(c.baseOffsetX, 0, player.z + c.baseOffsetZ);
-        }
-      });
-      if (metroTrain) {
-        metroTrainActive = false;
-        metroTrain.visible = false;
-      }
-      metroTimer = 8;
-
-      const cutsceneBanner = document.getElementById('cutscene-banner');
-      if (cutsceneBanner) cutsceneBanner.classList.add('hidden');
-      const hudEl = document.getElementById('hud');
-      if (hudEl) hudEl.classList.remove('hidden');
 
       const overlay = document.getElementById('countdown-overlay');
       if (overlay) overlay.classList.remove('hidden');
@@ -2585,18 +2552,6 @@ import * as THREE from "three";
 
     function updateCountdown(dt: number) {
       countdownTimer += dt;
-      player.runAnimTime += dt * 6;
-      animateDipkeLimbs(player.runAnimTime);
-      syncShadow();
-
-      camera.position.set(0, 4.2, player.z + 7.5);
-      camera.lookAt(0, 1.8, player.z - 12);
-
-      policeOfficers.forEach((cop) => {
-        if (cop.group) {
-          cop.group.position.z = player.z + cop.baseOffsetZ;
-        }
-      });
 
       if (countdownStep === 3 && countdownTimer >= 0.75) {
         countdownStep = 2;
@@ -2608,9 +2563,9 @@ import * as THREE from "three";
         countdownStep = 0;
         showCountdownNumber(0);
       } else if (countdownStep === 0 && countdownTimer >= 2.9) {
+        countdownStep = -1;
         const overlay = document.getElementById('countdown-overlay');
         if (overlay) overlay.classList.add('hidden');
-        currentGameState = STATE.PLAYING;
       }
     }
 
@@ -2702,7 +2657,6 @@ import * as THREE from "three";
 
       document.getElementById('menu-modal').classList.add('hidden');
       document.getElementById('gameover-modal').classList.add('hidden');
-      document.getElementById('cutscene-banner')?.classList.remove('hidden');
       document.getElementById('countdown-overlay')?.classList.add('hidden');
       document.getElementById('hud').classList.add('hidden');
       audio.playMetroRumble();
@@ -2724,8 +2678,6 @@ import * as THREE from "three";
 
       if (currentGameState === STATE.CUTSCENE) {
         updateCutscene(frameDt);
-      } else if (currentGameState === STATE.COUNTDOWN) {
-        updateCountdown(frameDt);
       } else if (currentGameState === STATE.PLAYING) {
         physAcc += frameDt;
         let steps = 0;
@@ -2868,11 +2820,26 @@ import * as THREE from "three";
       });
 
       if (cutsceneProgress >= 1.0) {
+        camera.up.set(0, 1, 0);
+        if (dipkeGroup) dipkeGroup.visible = true;
+        if (dipkeShadow) dipkeShadow.visible = true;
+        policeOfficers.forEach((c) => { if (c.group) c.group.visible = true; });
+        if (metroTrain) {
+          metroTrainActive = false;
+          metroTrain.visible = false;
+        }
+        metroTimer = 8;
+        currentGameState = STATE.PLAYING;
+        document.getElementById('hud')?.classList.remove('hidden');
+        audio.playHorn();
         startCountdown();
       }
     }
 
     function updateGameplay(dt) {
+      if (countdownStep >= 0) {
+        updateCountdown(dt);
+      }
       let speedMultiplier = 1.0;
       if (player.isFlying) {
         speedMultiplier = 1.6;
