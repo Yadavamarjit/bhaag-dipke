@@ -3129,8 +3129,9 @@ import * as THREE from "three";
         if (c.group) c.group.visible = true;
       });
 
-      runnersShownTimer += dt;
-      if (runnersShownTimer >= 1.0 && !tehelkaPlayedInCutscene) {
+      // Play intro meme audio only after camera has descended from Metro track down to road level,
+      // is locked in front of Dipke and Delhi Police, and characters are closer to the lens.
+      if (elapsed >= 6.6 && !tehelkaPlayedInCutscene) {
         tehelkaPlayedInCutscene = true;
         audio.playIntroMeme();
       }
