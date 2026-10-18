@@ -286,15 +286,15 @@ function Home() {
             <div className="bg-black/50 p-2.5 rounded-xl border border-emerald-500/30 flex items-start gap-2.5">
               <span className="text-2xl">💵</span>
               <div>
-                <div className="font-bold text-emerald-300">₹500 Currency Bundle (गड्डी)</div>
-                <div className="text-gray-300 text-[11px]">Crisp green currency stack! Adds ₹500 cash to your total stash and boosts score.</div>
+                <div className="font-bold text-emerald-300">₹100 Currency Bundle (गड्डी)</div>
+                <div className="text-gray-300 text-[11px]">Crisp currency stack! Adds ₹100 cash to your total stash and boosts score.</div>
               </div>
             </div>
             <div className="bg-black/50 p-2.5 rounded-xl border border-rose-500/30 flex items-start gap-2.5">
               <span className="text-2xl">💰</span>
               <div>
-                <div className="font-bold text-rose-300">₹2000 Pink Note Stack</div>
-                <div className="text-gray-300 text-[11px]">High-denomination rare bundle! Awards 5 bundles (+₹2,500 cash) instantly.</div>
+                <div className="font-bold text-rose-300">₹500 Pink Note Stack</div>
+                <div className="text-gray-300 text-[11px]">High-denomination rare bundle! Awards 5 bundles (+₹500 cash) instantly.</div>
               </div>
             </div>
           </div>

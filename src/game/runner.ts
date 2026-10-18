@@ -2413,11 +2413,60 @@ import * as THREE from "three";
 
     const cashStackGeo = new THREE.BoxGeometry(0.78, 0.26, 1.25);
     const cashBandGeo = new THREE.BoxGeometry(0.81, 0.27, 0.38);
+    const cashFaceGeo = new THREE.PlaneGeometry(0.72, 0.36);
+    let cash100LabelMat = null;
+    let cash500LabelMat = null;
+
+    function getCashLabelMat(isRare = false) {
+      if (isRare) {
+        if (!cash500LabelMat) {
+          const canvas = document.createElement("canvas");
+          canvas.width = 256;
+          canvas.height = 128;
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#9d174d";
+          ctx.fillRect(0, 0, 256, 128);
+          ctx.strokeStyle = "#fbcfe8";
+          ctx.lineWidth = 6;
+          ctx.strokeRect(6, 6, 244, 116);
+          ctx.fillStyle = "#ffffff";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = "bold 44px Arial, sans-serif";
+          ctx.fillText("₹500", 128, 64);
+          const tex = new THREE.CanvasTexture(canvas);
+          tex.colorSpace = THREE.SRGBColorSpace;
+          cash500LabelMat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide });
+        }
+        return cash500LabelMat;
+      } else {
+        if (!cash100LabelMat) {
+          const canvas = document.createElement("canvas");
+          canvas.width = 256;
+          canvas.height = 128;
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#065f46";
+          ctx.fillRect(0, 0, 256, 128);
+          ctx.strokeStyle = "#a7f3d0";
+          ctx.lineWidth = 6;
+          ctx.strokeRect(6, 6, 244, 116);
+          ctx.fillStyle = "#ffffff";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = "bold 44px Arial, sans-serif";
+          ctx.fillText("₹100", 128, 64);
+          const tex = new THREE.CanvasTexture(canvas);
+          tex.colorSpace = THREE.SRGBColorSpace;
+          cash100LabelMat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide });
+        }
+        return cash100LabelMat;
+      }
+    }
 
     function createCashBundleMesh(isRare = false) {
       const bundle = new THREE.Group();
 
-      // Main currency notes stack (Green ₹500 or Pink ₹2000)
+      // Main currency notes stack
       const stack = new THREE.Mesh(cashStackGeo, isRare ? mats.cashPink2000 : mats.cashGreen500);
       bundle.add(stack);
 
@@ -2425,17 +2474,11 @@ import * as THREE from "three";
       const band = new THREE.Mesh(cashBandGeo, mats.cashBand);
       bundle.add(band);
 
-      // Top printed denomination face
-      const topFace = labelPlane(isRare ? "₹2000" : "₹500", isRare ? "#831843" : "#065f46", "#ffffff", 0.72, 0.36);
+      // Top printed denomination face (using shared geometry and cached material)
+      const topFace = new THREE.Mesh(cashFaceGeo, getCashLabelMat(isRare));
       topFace.rotation.x = -Math.PI / 2;
       topFace.position.set(0, 0.135, 0);
       bundle.add(topFace);
-
-      // Bottom printed face
-      const bottomFace = labelPlane(isRare ? "₹2000" : "₹500", isRare ? "#831843" : "#065f46", "#ffffff", 0.72, 0.36);
-      bottomFace.rotation.x = Math.PI / 2;
-      bottomFace.position.set(0, -0.135, 0);
-      bundle.add(bottomFace);
 
       bundle.userData = { type: 'CASH', value: isRare ? 5 : 1, isSkyItem: isRare };
       return bundle;
@@ -2598,40 +2641,49 @@ import * as THREE from "three";
       const obstacleTypes = ['BUS', 'AUTO', 'BARRICADE'];
       const canSpawnObstacles = (player.distance >= 40);
 
-      for (let lane = 0; lane < 3; lane++) {
-        if (blocked.has(lane)) continue;
-        if (lane === freeLane || !canSpawnObstacles) {
-          if (Math.random() < 0.28) {
-            spawnPowerup(lane, zPos);
-          } else {
-            spawnSamosaTrail(lane, zPos);
-          }
-          continue;
+      // In the free open lane, occasionally spawn ONE single item (powerup or single bundle)
+      // Never spawn multiple bundles side-by-side or tightly packed
+      if (Math.random() < 0.12) {
+        spawnPowerup(freeLane, zPos);
+      } else if (Math.random() < 0.28) {
+        // 80% reduction: only 28% of clusters have 1 single bundle in the free lane
+        spawnCashBundle(freeLane, zPos);
+      }
+
+      // In other lanes, spawn obstacles if distance allows
+      if (canSpawnObstacles) {
+        for (let lane = 0; lane < 3; lane++) {
+          if (lane === freeLane || blocked.has(lane)) continue;
+
+          // Occasionally leave an extra lane open for smooth dodging
+          if (Math.random() < 0.25) continue;
+
+          const type = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+          let obsMesh;
+
+          if (type === 'BUS') obsMesh = createDtcBus();
+          else if (type === 'AUTO') obsMesh = createAutoRickshaw();
+          else obsMesh = createPoliceBarricade();
+
+          obsMesh.userData.anchorZ = zPos;
+          obsMesh.position.set(LANES[lane], 0, zPos);
+          scene.add(obsMesh);
+          obstacles.push(obsMesh);
         }
-
-        const type = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
-        let obsMesh;
-
-        if (type === 'BUS') obsMesh = createDtcBus();
-        else if (type === 'AUTO') obsMesh = createAutoRickshaw();
-        else obsMesh = createPoliceBarricade();
-
-        obsMesh.userData.anchorZ = zPos;
-        obsMesh.position.set(LANES[lane], 0, zPos);
-        scene.add(obsMesh);
-        obstacles.push(obsMesh);
       }
 
       spawnSkyCourse(zPos);
     }
 
     function spawnSkyCourse(zPos) {
+      // Keep sky clean and high-FPS unless player is flying with jetpack
+      if (!player.isFlying && Math.random() > 0.15) return;
       const skyLane = Math.floor(Math.random() * 3);
-      if (Math.random() < 0.5) {
-        const golden = createSamosaMesh(true);
-        golden.position.set(LANES[skyLane], 8.5, zPos);
-        scene.add(golden);
-        collectibles.push(golden);
+      if (Math.random() < 0.20) {
+        const rareCash = createCashBundleMesh(true);
+        rareCash.position.set(LANES[skyLane], 8.5, zPos);
+        scene.add(rareCash);
+        collectibles.push(rareCash);
       } else {
         const ring = createSkyRingMesh();
         ring.position.set(LANES[skyLane], 8.5, zPos);
@@ -2640,13 +2692,15 @@ import * as THREE from "three";
       }
     }
 
+    function spawnCashBundle(lane, zPos) {
+      const cash = createCashBundleMesh(false);
+      cash.position.set(LANES[lane], 0.9, zPos);
+      scene.add(cash);
+      collectibles.push(cash);
+    }
+
     function spawnSamosaTrail(lane, zPos) {
-      for (let k = 0; k < 3; k++) {
-        const samosa = createSamosaMesh(false);
-        samosa.position.set(LANES[lane], 0.9, zPos + (k - 1) * 3);
-        scene.add(samosa);
-        collectibles.push(samosa);
-      }
+      spawnCashBundle(lane, zPos);
     }
 
     function spawnPowerup(lane, zPos) {
@@ -2766,7 +2820,7 @@ import * as THREE from "three";
           const dist = Math.floor(player.distance);
           const coins = player.coins;
           const score = player.score;
-          const cashAmount = (coins * 500).toLocaleString('en-IN');
+          const cashAmount = (coins * 100).toLocaleString('en-IN');
           const text = `🚨 Delhi Police caught me in Bhaag Dipke Bhaag!\n🏃 Distance: ${dist}m\n💵 Cash Stash: ₹${cashAmount} (${coins} Bundles)\n🏆 Score: ${score}\nCan you escape the Delhi Police? Play now: https://bhaag-dipke.vercel.app/`;
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text).then(() => {
@@ -3726,7 +3780,7 @@ import * as THREE from "three";
       const goDistEl = document.getElementById('go-dist');
       if (goDistEl) goDistEl.textContent = Math.floor(player.distance) + ' m';
       const goCoinsEl = document.getElementById('go-coins');
-      if (goCoinsEl) goCoinsEl.textContent = '₹' + (player.coins * 500).toLocaleString('en-IN') + ' (' + player.coins + ' 💵)';
+      if (goCoinsEl) goCoinsEl.textContent = '₹' + (player.coins * 100).toLocaleString('en-IN') + ' (' + player.coins + ' 💵)';
       const goScoreEl = document.getElementById('go-score');
       if (goScoreEl) goScoreEl.textContent = player.score.toString();
 
@@ -3746,7 +3800,7 @@ import * as THREE from "three";
 
     function updateHUD() {
       document.getElementById('hud-distance').textContent = Math.floor(player.distance);
-      document.getElementById('hud-coins').textContent = '₹' + (player.coins * 500).toLocaleString('en-IN');
+      document.getElementById('hud-coins').textContent = '₹' + (player.coins * 100).toLocaleString('en-IN');
 
       const landmarkIdx = Math.floor((player.distance / 160) % DELHI_LANDMARKS.length);
       document.getElementById('hud-landmark').textContent = DELHI_LANDMARKS[landmarkIdx];
@@ -3761,16 +3815,16 @@ import * as THREE from "three";
         localStorage.setItem('bhaag_best_coins', bestCoins.toString());
 
         document.getElementById('menu-best-dist').textContent = bestDist + ' m';
-        document.getElementById('menu-best-coins').textContent = bestCoins + ' 💵';
+        document.getElementById('menu-best-coins').textContent = '₹' + (bestCoins * 100).toLocaleString('en-IN');
       } catch (e) {}
     }
 
     function loadHighScores() {
       try {
         const bestDist = localStorage.getItem('bhaag_best_dist') || '0';
-        const bestCoins = localStorage.getItem('bhaag_best_coins') || '0';
+        const bestCoins = parseInt(localStorage.getItem('bhaag_best_coins') || '0', 10);
         document.getElementById('menu-best-dist').textContent = bestDist + ' m';
-        document.getElementById('menu-best-coins').textContent = bestCoins + ' 💵';
+        document.getElementById('menu-best-coins').textContent = '₹' + (bestCoins * 100).toLocaleString('en-IN');
       } catch (e) {}
     }
 
