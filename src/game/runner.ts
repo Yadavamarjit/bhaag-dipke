@@ -700,7 +700,15 @@ import * as THREE from "three";
       cpWindow: new THREE.MeshLambertMaterial({ color: 0x1e293b }),
       cpWindowTrim: new THREE.MeshLambertMaterial({ color: 0xffffff }),
       cpCornice: new THREE.MeshLambertMaterial({ color: 0xdedede }),
-      cpDoorway: new THREE.MeshLambertMaterial({ color: 0x171717 })
+      cpDoorway: new THREE.MeshLambertMaterial({ color: 0x171717 }),
+      cpRoofGravel: new THREE.MeshLambertMaterial({ color: 0x78716c }),
+      sintexBlack: new THREE.MeshLambertMaterial({ color: 0x18181b }),
+      acChillerGrey: new THREE.MeshLambertMaterial({ color: 0x94a3b8 }),
+      cityTerrain: new THREE.MeshLambertMaterial({ color: 0x1c1917 }),
+      skylineGlass: new THREE.MeshLambertMaterial({ color: 0x0284c7 }),
+      skylineSandstone: new THREE.MeshLambertMaterial({ color: 0xb45309 }),
+      skylineWhite: new THREE.MeshLambertMaterial({ color: 0xd6d3d1 }),
+      treeCanopyLush: new THREE.MeshLambertMaterial({ color: 0x14532d })
     };
 
     let jetpackModel = null;
@@ -1533,6 +1541,22 @@ import * as THREE from "three";
     const cpWindowTrimGeo = new THREE.BoxGeometry(1.4, 0.18, 0.15);
     const cpDoorGeo = new THREE.PlaneGeometry(2.0, 3.8);
 
+    // City Depth, Rooftop, Foliage & Skyline Geometries (Full 3D city from high camera angles)
+    const cityGroundGeo = new THREE.PlaneGeometry(360, SEGMENT_LENGTH);
+    const cpBuildingBlockGeo = new THREE.BoxGeometry(16.0, 11.5, SEGMENT_LENGTH);
+    const cpTerraceFloorGeo = new THREE.BoxGeometry(16.0, 0.35, SEGMENT_LENGTH);
+    const cpTerraceParapetGeo = new THREE.BoxGeometry(0.35, 0.85, SEGMENT_LENGTH);
+    const cpPenthouseGeo = new THREE.BoxGeometry(5.0, 2.8, 6.0);
+    const sintexTankGeo = new THREE.CylinderGeometry(0.65, 0.65, 1.4, 10);
+    const tankStandGeo = new THREE.BoxGeometry(1.5, 0.45, 1.5);
+    const acUnitGeo = new THREE.BoxGeometry(1.6, 1.0, 1.2);
+    const dishAntennaGeo = new THREE.CylinderGeometry(0.5, 0.05, 0.2, 10);
+    const lushCanopyGeo = new THREE.DodecahedronGeometry(2.8);
+    const skylineTower1Geo = new THREE.BoxGeometry(16, 32, 18);
+    const skylineTower2Geo = new THREE.BoxGeometry(18, 42, 22);
+    const skylineTower3Geo = new THREE.BoxGeometry(14, 26, 16);
+    const skylineCrownGeo = new THREE.CylinderGeometry(4.5, 6.0, 4.0, 12);
+
     const CP_BLOCKS = [
       { block: "BLOCK A • CONNAUGHT PLACE", shop: "WENGER'S BAKERY 1926", shopColor: "#881337" },
       { block: "BLOCK B • INNER CIRCLE", shop: "KEVENTERS MILKSHAKES", shopColor: "#0284c7" },
@@ -1622,7 +1646,7 @@ import * as THREE from "three";
       upperWall.receiveShadow = true;
       blockGroup.add(upperWall);
 
-      // 5. Roofline Cornice & Top Parapet Railing
+      // Roofline Cornice & Top Parapet Railing
       const cornice = new THREE.Mesh(cpRoofCorniceGeo, mats.cpCornice);
       cornice.position.set(xBase - faceDir * 0.65, 11.65, 0);
       blockGroup.add(cornice);
@@ -1631,13 +1655,107 @@ import * as THREE from "three";
       parapet.position.set(xBase - faceDir * 0.65, 12.25, 0);
       blockGroup.add(parapet);
 
-      // 6. Iconic CP Blue Block Signboard
+      // 5. Full 3D CP Building Block (16m deep structure behind the colonnade)
+      const buildingBlock = new THREE.Mesh(cpBuildingBlockGeo, mats.cpWhite);
+      buildingBlock.position.set(xBase - faceDir * 7.5, 5.75, 0);
+      buildingBlock.castShadow = true;
+      buildingBlock.receiveShadow = true;
+      blockGroup.add(buildingBlock);
+
+      // Terrace Gravel/Stone Floor
+      const terrace = new THREE.Mesh(cpTerraceFloorGeo, mats.cpRoofGravel);
+      terrace.position.set(xBase - faceDir * 7.5, 11.55, 0);
+      terrace.receiveShadow = true;
+      blockGroup.add(terrace);
+
+      // Rear Parapet Border Wall on Terrace
+      const backParapet = new THREE.Mesh(cpTerraceParapetGeo, mats.cpWhite);
+      backParapet.position.set(xBase - faceDir * 15.3, 12.0, 0);
+      blockGroup.add(backParapet);
+
+      // 6. Authentic Delhi Rooftop Details: Sintex Tanks, AC Chillers & Penthouse
+      // Penthouse / Rooftop Stairwell Room
+      const penthouse = new THREE.Mesh(cpPenthouseGeo, mats.cpWhite);
+      penthouse.position.set(xBase - faceDir * 7.5, 12.9, -12);
+      blockGroup.add(penthouse);
+
+      // Black Sintex Water Tanks on stands
+      [-18, 8, 22].forEach(tz => {
+        const stand = new THREE.Mesh(tankStandGeo, mats.cpPillarBase);
+        stand.position.set(xBase - faceDir * 11.0, 11.8, tz);
+        blockGroup.add(stand);
+
+        const tank = new THREE.Mesh(sintexTankGeo, mats.sintexBlack);
+        tank.position.set(xBase - faceDir * 11.0, 12.6, tz);
+        blockGroup.add(tank);
+      });
+
+      // Rooftop AC Outdoor Chiller Units
+      [-6, 14, -24].forEach(az => {
+        const ac = new THREE.Mesh(acUnitGeo, mats.acChillerGrey);
+        ac.position.set(xBase - faceDir * 4.5, 12.1, az);
+        blockGroup.add(ac);
+      });
+
+      // Satellite Dish Antenna
+      const dishStand = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.2, 6), mats.blackRubber);
+      dishStand.position.set(xBase - faceDir * 3.5, 12.2, 3);
+      blockGroup.add(dishStand);
+
+      const dish = new THREE.Mesh(dishAntennaGeo, mats.acChillerGrey);
+      dish.position.set(xBase - faceDir * 3.5, 12.7, 3);
+      dish.rotation.x = 0.6;
+      blockGroup.add(dish);
+
+      // 7. Lutyens' Delhi Lush Green Tree Canopies (Filling space behind the building)
+      for (let tz = -SEGMENT_LENGTH / 2 + 5; tz < SEGMENT_LENGTH / 2; tz += 11) {
+        const canopy = new THREE.Mesh(lushCanopyGeo, mats.treeCanopyLush);
+        canopy.position.set(xBase - faceDir * (17.5 + ((Math.abs(tz) % 3) * 1.5)), 3.8 + ((Math.abs(tz) % 2) * 0.8), tz);
+        blockGroup.add(canopy);
+      }
+
+      // 8. Barakhamba / Central Delhi Skyline Backdrop (High-Rise Towers in Distance)
+      const towerVariant = Math.abs(zIndex || 0) % 3;
+      if (towerVariant === 0) {
+        // Sandstone Corporate Tower (e.g. Gopal Das / LIC style)
+        const tower1 = new THREE.Mesh(skylineTower1Geo, mats.skylineSandstone);
+        tower1.position.set(xBase - faceDir * 36.0, 16.0, -14);
+        blockGroup.add(tower1);
+
+        // Modern Glass Tower
+        const tower2 = new THREE.Mesh(skylineTower2Geo, mats.skylineGlass);
+        tower2.position.set(xBase - faceDir * 44.0, 21.0, 14);
+        blockGroup.add(tower2);
+      } else if (towerVariant === 1) {
+        // Statesman House style tower with glass crown
+        const tower3 = new THREE.Mesh(skylineTower3Geo, mats.skylineWhite);
+        tower3.position.set(xBase - faceDir * 38.0, 13.0, 0);
+        blockGroup.add(tower3);
+
+        const crown = new THREE.Mesh(skylineCrownGeo, mats.skylineGlass);
+        crown.position.set(xBase - faceDir * 38.0, 27.5, 0);
+        blockGroup.add(crown);
+
+        const towerB = new THREE.Mesh(skylineTower1Geo, mats.skylineSandstone);
+        towerB.position.set(xBase - faceDir * 48.0, 16.0, 20);
+        blockGroup.add(towerB);
+      } else {
+        const towerC = new THREE.Mesh(skylineTower2Geo, mats.skylineSandstone);
+        towerC.position.set(xBase - faceDir * 40.0, 21.0, -8);
+        blockGroup.add(towerC);
+
+        const towerD = new THREE.Mesh(skylineTower1Geo, mats.skylineWhite);
+        towerD.position.set(xBase - faceDir * 42.0, 16.0, 18);
+        blockGroup.add(towerD);
+      }
+
+      // 9. Iconic CP Blue Block Signboard
       const blockSign = labelPlane(info.block, "#002b80", "#ffffff", 7.2, 1.15);
       blockSign.position.set(xBase + faceDir * 0.68, 6.2, 0);
       blockSign.rotation.y = isRight ? -Math.PI / 2 : Math.PI / 2;
       blockGroup.add(blockSign);
 
-      // 7. Iconic Vintage CP Shop Sign
+      // 10. Iconic Vintage CP Shop Sign
       const shopSign = labelPlane(info.shop, info.shopColor, "#ffffff", 5.6, 0.9);
       shopSign.position.set(xBase + faceDir * 0.68, 5.0, 14);
       shopSign.rotation.y = isRight ? -Math.PI / 2 : Math.PI / 2;
@@ -1649,6 +1767,13 @@ import * as THREE from "three";
     function buildRoadSegment(zOffset) {
       const segmentGroup = new THREE.Group();
       segmentGroup.position.z = zOffset;
+
+      // Vast City Ground Plane (Eliminates void drop-off from ANY high camera angle)
+      const cityGround = new THREE.Mesh(cityGroundGeo, mats.cityTerrain);
+      cityGround.rotation.x = -Math.PI / 2;
+      cityGround.position.set(0, -0.02, 0);
+      cityGround.receiveShadow = true;
+      segmentGroup.add(cityGround);
 
       const roadGeo = new THREE.PlaneGeometry(ROAD_WIDTH, SEGMENT_LENGTH);
       const road = new THREE.Mesh(roadGeo, mats.asphalt);
