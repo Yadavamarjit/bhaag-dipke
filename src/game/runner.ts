@@ -693,7 +693,14 @@ import * as THREE from "three";
       treeGreen: new THREE.MeshLambertMaterial({ color: 0x15803d }),
       treeTrunk: new THREE.MeshLambertMaterial({ color: 0x713f12 }),
       monumentSandstone: new THREE.MeshLambertMaterial({ color: 0xd97706 }),
-      monumentBeige: new THREE.MeshLambertMaterial({ color: 0xfde68a })
+      monumentBeige: new THREE.MeshLambertMaterial({ color: 0xfde68a }),
+      cpWhite: new THREE.MeshLambertMaterial({ color: 0xf4f4f1 }),
+      cpPillarBase: new THREE.MeshLambertMaterial({ color: 0xe2e4e8 }),
+      cpShadowWall: new THREE.MeshLambertMaterial({ color: 0x222226 }),
+      cpWindow: new THREE.MeshLambertMaterial({ color: 0x1e293b }),
+      cpWindowTrim: new THREE.MeshLambertMaterial({ color: 0xffffff }),
+      cpCornice: new THREE.MeshLambertMaterial({ color: 0xdedede }),
+      cpDoorway: new THREE.MeshLambertMaterial({ color: 0x171717 })
     };
 
     let jetpackModel = null;
@@ -1512,6 +1519,133 @@ import * as THREE from "three";
       scene.add(buildRoadSegment(SEGMENT_LENGTH * 2));
     }
 
+    // Shared Connaught Place geometries (cached & shared to maintain 60 FPS on mobile)
+    const cpPillarGeo = new THREE.CylinderGeometry(0.38, 0.42, 6.0, 8);
+    const cpPillarBaseGeo = new THREE.BoxGeometry(1.0, 0.4, 1.0);
+    const cpPillarCapitalGeo = new THREE.BoxGeometry(1.0, 0.35, 1.0);
+    const cpArchitraveBeamGeo = new THREE.BoxGeometry(1.3, 0.65, SEGMENT_LENGTH);
+    const cpFacadeUpperGeo = new THREE.BoxGeometry(2.6, 5.0, SEGMENT_LENGTH);
+    const cpWalkwayBackWallGeo = new THREE.BoxGeometry(0.8, 6.0, SEGMENT_LENGTH);
+    const cpRoofCorniceGeo = new THREE.BoxGeometry(3.0, 0.45, SEGMENT_LENGTH);
+    const cpParapetRailingGeo = new THREE.BoxGeometry(2.4, 0.85, SEGMENT_LENGTH);
+    const cpWalkwayFloorGeo = new THREE.BoxGeometry(6.5, 0.35, SEGMENT_LENGTH);
+    const cpWindowGeo = new THREE.PlaneGeometry(1.2, 2.0);
+    const cpWindowTrimGeo = new THREE.BoxGeometry(1.4, 0.18, 0.15);
+    const cpDoorGeo = new THREE.PlaneGeometry(2.0, 3.8);
+
+    const CP_BLOCKS = [
+      { block: "BLOCK A • CONNAUGHT PLACE", shop: "WENGER'S BAKERY 1926", shopColor: "#881337" },
+      { block: "BLOCK B • INNER CIRCLE", shop: "KEVENTERS MILKSHAKES", shopColor: "#0284c7" },
+      { block: "BLOCK C • CONNAUGHT CIRCUS", shop: "ODEON DELUXE • CP", shopColor: "#15803d" },
+      { block: "BLOCK D • RAJIV CHOWK", shop: "DELHI KHADI BHAWAN", shopColor: "#b45309" }
+    ];
+
+    function createCPColonnadeBlock(side, zIndex) {
+      const blockGroup = new THREE.Group();
+      const isRight = side === 'right';
+      const xBase = isRight ? (ROAD_WIDTH / 2 + 4.8) : -(ROAD_WIDTH / 2 + 8.8);
+      const faceDir = isRight ? -1 : 1;
+      const info = CP_BLOCKS[Math.abs(zIndex || 0) % CP_BLOCKS.length];
+
+      // 0. Stone Verandah Pavement Plinth
+      const floor = new THREE.Mesh(cpWalkwayFloorGeo, mats.sidewalk);
+      floor.position.set(xBase - faceDir * 0.8, 0.17, 0);
+      floor.receiveShadow = true;
+      blockGroup.add(floor);
+
+      // 1. Shaded Covered Verandah Back Wall
+      const backWall = new THREE.Mesh(cpWalkwayBackWallGeo, mats.cpShadowWall);
+      backWall.position.set(xBase - faceDir * 2.5, 3.0, 0);
+      blockGroup.add(backWall);
+
+      // 2. Colonnade Walkway Architrave Beam
+      const beam = new THREE.Mesh(cpArchitraveBeamGeo, mats.cpWhite);
+      beam.position.set(xBase, 6.2, 0);
+      beam.castShadow = true;
+      beam.receiveShadow = true;
+      blockGroup.add(beam);
+
+      // 3. Classical Tuscan Pillars along the 70m block
+      const pillarCount = 13;
+      const stepZ = (SEGMENT_LENGTH - 6) / (pillarCount - 1);
+      for (let i = 0; i < pillarCount; i++) {
+        const pz = -SEGMENT_LENGTH / 2 + 3 + i * stepZ;
+
+        // Pillar shaft
+        const pillar = new THREE.Mesh(cpPillarGeo, mats.cpWhite);
+        pillar.position.set(xBase, 3.0, pz);
+        pillar.castShadow = true;
+        pillar.receiveShadow = true;
+        blockGroup.add(pillar);
+
+        // Pedestal base & capital
+        const pBase = new THREE.Mesh(cpPillarBaseGeo, mats.cpPillarBase);
+        pBase.position.set(xBase, 0.2, pz);
+        blockGroup.add(pBase);
+
+        const pCap = new THREE.Mesh(cpPillarCapitalGeo, mats.cpPillarBase);
+        pCap.position.set(xBase, 5.85, pz);
+        blockGroup.add(pCap);
+
+        // Upper floor Georgian sash windows
+        if (i < pillarCount - 1) {
+          const wz = pz + stepZ / 2;
+          const win = new THREE.Mesh(cpWindowGeo, mats.cpWindow);
+          win.position.set(xBase + faceDir * 1.32, 9.0, wz);
+          win.rotation.y = isRight ? -Math.PI / 2 : Math.PI / 2;
+          blockGroup.add(win);
+
+          const sill = new THREE.Mesh(cpWindowTrimGeo, mats.cpWindowTrim);
+          sill.position.set(xBase + faceDir * 1.34, 7.9, wz);
+          sill.rotation.y = isRight ? -Math.PI / 2 : Math.PI / 2;
+          blockGroup.add(sill);
+
+          const lintel = new THREE.Mesh(cpWindowTrimGeo, mats.cpWindowTrim);
+          lintel.position.set(xBase + faceDir * 1.34, 10.1, wz);
+          lintel.rotation.y = isRight ? -Math.PI / 2 : Math.PI / 2;
+          blockGroup.add(lintel);
+        }
+
+        // Shop entrance doors along shaded walkway
+        if (i % 3 === 1) {
+          const door = new THREE.Mesh(cpDoorGeo, mats.cpDoorway);
+          door.position.set(xBase - faceDir * 2.08, 1.9, pz + stepZ / 2);
+          door.rotation.y = isRight ? -Math.PI / 2 : Math.PI / 2;
+          blockGroup.add(door);
+        }
+      }
+
+      // 4. Second Story White Facade Wall
+      const upperWall = new THREE.Mesh(cpFacadeUpperGeo, mats.cpWhite);
+      upperWall.position.set(xBase - faceDir * 0.65, 9.0, 0);
+      upperWall.castShadow = true;
+      upperWall.receiveShadow = true;
+      blockGroup.add(upperWall);
+
+      // 5. Roofline Cornice & Top Parapet Railing
+      const cornice = new THREE.Mesh(cpRoofCorniceGeo, mats.cpCornice);
+      cornice.position.set(xBase - faceDir * 0.65, 11.65, 0);
+      blockGroup.add(cornice);
+
+      const parapet = new THREE.Mesh(cpParapetRailingGeo, mats.cpWhite);
+      parapet.position.set(xBase - faceDir * 0.65, 12.25, 0);
+      blockGroup.add(parapet);
+
+      // 6. Iconic CP Blue Block Signboard
+      const blockSign = labelPlane(info.block, "#002b80", "#ffffff", 7.2, 1.15);
+      blockSign.position.set(xBase + faceDir * 0.68, 6.2, 0);
+      blockSign.rotation.y = isRight ? -Math.PI / 2 : Math.PI / 2;
+      blockGroup.add(blockSign);
+
+      // 7. Iconic Vintage CP Shop Sign
+      const shopSign = labelPlane(info.shop, info.shopColor, "#ffffff", 5.6, 0.9);
+      shopSign.position.set(xBase + faceDir * 0.68, 5.0, 14);
+      shopSign.rotation.y = isRight ? -Math.PI / 2 : Math.PI / 2;
+      blockGroup.add(shopSign);
+
+      return blockGroup;
+    }
+
     function buildRoadSegment(zOffset) {
       const segmentGroup = new THREE.Group();
       segmentGroup.position.z = zOffset;
@@ -1565,6 +1699,14 @@ import * as THREE from "three";
       metroStripe.position.set(-8.2, 8.5, 0);
       segmentGroup.add(metroStripe);
 
+      // Add Connaught Place Colonnades on Both Sides of the Road!
+      const cpIdx = Math.round(Math.abs(zOffset) / SEGMENT_LENGTH);
+      const cpRight = createCPColonnadeBlock('right', cpIdx);
+      segmentGroup.add(cpRight);
+
+      const cpLeft = createCPColonnadeBlock('left', cpIdx + 1);
+      segmentGroup.add(cpLeft);
+
       if (Math.random() > 0.28) {
         const protest = createProtestDharnaScene();
         const side = Math.random() > 0.5 ? 7.5 : -7.5;
@@ -1574,27 +1716,27 @@ import * as THREE from "three";
 
       if (Math.random() > 0.45) {
         const stall = createChaiStall();
-        stall.position.set(7.8, 0, 18);
+        stall.position.set(7.5, 0, 18);
         segmentGroup.add(stall);
       }
 
       if (Math.random() > 0.55) {
         const closed = createClosedParkBoard();
-        closed.position.set(-7.6, 0, 16);
+        closed.position.set(-6.8, 0, 16);
         closed.rotation.y = -Math.PI / 2;
         segmentGroup.add(closed);
       }
 
       if (Math.random() > 0.58) {
         const metro = createClosedMetro();
-        metro.position.set(10.4, 0, -20);
-        metro.rotation.y = Math.PI / 2;
+        metro.position.set(7.5, 0, -20);
+        metro.rotation.y = -Math.PI / 2;
         segmentGroup.add(metro);
       }
 
       if (Math.random() > 0.62) {
         const parked = createDtcBus();
-        parked.position.set(12.4, 0, 2);
+        parked.position.set(7.5, 0, 2);
         parked.rotation.y = Math.PI / 2;
         const tag = labelPlane("DETENTION BUS\nHOUSE FULL", "#111827", "#facc15", 3.4, 0.95);
         tag.position.set(0, 2.2, 1.25);
@@ -1606,8 +1748,8 @@ import * as THREE from "three";
         segmentGroup.add(parked);
       }
 
-      createStreetTree(segmentGroup, 8.5, -22);
-      createStreetTree(segmentGroup, 8.5, 22);
+      createStreetTree(segmentGroup, 7.6, -22);
+      createStreetTree(segmentGroup, 7.6, 22);
 
       if (Math.random() > 0.5) {
         createDelhiSignboard(segmentGroup, -6.2, 0);
