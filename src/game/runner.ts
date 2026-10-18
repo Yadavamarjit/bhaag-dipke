@@ -2453,6 +2453,40 @@ import * as THREE from "three";
       bindClick('btn-start', startCutsceneIntro);
       bindClick('btn-restart', startCutsceneIntro);
 
+      const audioBtn = document.getElementById('btn-audio-toggle');
+      if (audioBtn) {
+        audioBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          audio.isMuted = !audio.isMuted;
+          const icon = document.getElementById('audio-toggle-icon');
+          if (icon) icon.textContent = audio.isMuted ? '🔇' : '🔊';
+          if (audioBtn.lastChild) {
+            audioBtn.lastChild.textContent = audio.isMuted ? ' Sound OFF' : ' Sound ON';
+          }
+        });
+      }
+
+      const shareBtn = document.getElementById('btn-share-score');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const dist = Math.floor(player.distance);
+          const coins = player.coins;
+          const score = player.score;
+          const text = `🚨 Delhi Police caught me in Bhaag Dipke Bhaag!\n🏃 Distance: ${dist}m\n🥟 Samosas: ${coins}\n🏆 Score: ${score}\nCan you escape the Delhi Police? Play now: https://bhaag-dipke.vercel.app/`;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+              const label = document.getElementById('share-btn-text');
+              if (label) {
+                const prev = label.textContent;
+                label.textContent = "✅ Challan Copied to Clipboard!";
+                setTimeout(() => { if (label) label.textContent = prev; }, 2200);
+              }
+            }).catch(() => {});
+          }
+        });
+      }
+
       const photoInput = document.getElementById('photo-input');
       if (photoInput) {
         const onPhoto = (e) => {
@@ -3395,19 +3429,35 @@ import * as THREE from "three";
       currentGameState = STATE.GAMEOVER;
       audio.playGameOver();
 
+      const prevBestDist = parseInt(localStorage.getItem('bhaag_best_dist') || '0', 10);
+      const isNewRecord = Math.floor(player.distance) > prevBestDist && player.distance > 50;
+
       player.score = Math.floor(player.distance + player.coins * 10);
       const quip = HINDI_QUIPS[Math.floor(Math.random() * HINDI_QUIPS.length)];
-      document.getElementById('go-hindi-quip').textContent = quip.text;
-      document.getElementById('go-reason').textContent = quip.desc;
+      const hindiQuipEl = document.getElementById('go-hindi-quip');
+      if (hindiQuipEl) hindiQuipEl.textContent = quip.text;
+      const reasonEl = document.getElementById('go-reason');
+      if (reasonEl) reasonEl.textContent = quip.desc;
 
-      document.getElementById('go-dist').textContent = Math.floor(player.distance) + ' m';
-      document.getElementById('go-coins').textContent = player.coins + ' 🥟';
-      document.getElementById('go-score').textContent = player.score;
+      const goDistEl = document.getElementById('go-dist');
+      if (goDistEl) goDistEl.textContent = Math.floor(player.distance) + ' m';
+      const goCoinsEl = document.getElementById('go-coins');
+      if (goCoinsEl) goCoinsEl.textContent = player.coins + ' 🥟';
+      const goScoreEl = document.getElementById('go-score');
+      if (goScoreEl) goScoreEl.textContent = player.score.toString();
+
+      const newRecordBadge = document.getElementById('go-new-record');
+      if (newRecordBadge) {
+        if (isNewRecord) newRecordBadge.classList.remove('hidden');
+        else newRecordBadge.classList.add('hidden');
+      }
 
       saveHighScores();
 
-      document.getElementById('hud').classList.add('hidden');
-      document.getElementById('gameover-modal').classList.remove('hidden');
+      const hud = document.getElementById('hud');
+      if (hud) hud.classList.add('hidden');
+      const goModal = document.getElementById('gameover-modal');
+      if (goModal) goModal.classList.remove('hidden');
     }
 
     function updateHUD() {
