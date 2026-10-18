@@ -42,6 +42,24 @@ function Home() {
   </div>
 
   
+  {/* 3-2-1 Countdown Animation Overlay */}
+  <div id="countdown-overlay" className="hud-layer flex flex-col items-center justify-center pointer-events-none hidden z-50">
+    <div className="flex flex-col items-center justify-center select-none text-center px-4">
+      <div
+        id="countdown-number"
+        className="text-8xl sm:text-9xl font-bungee font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 via-orange-400 to-red-500 drop-shadow-[0_14px_35px_rgba(0,0,0,0.95)]"
+      >
+        3
+      </div>
+      <div
+        id="countdown-subtext"
+        className="text-2xl sm:text-3xl font-hindi-style font-extrabold text-amber-200 tracking-wider mt-2 drop-shadow-md"
+      >
+        तैयार हो जाओ!
+      </div>
+    </div>
+  </div>
+
   <div id="cutscene-banner" className="hud-layer flex flex-col items-center justify-start pt-12 sm:pt-16 hidden">
     <div className="glass-card police-siren-border px-6 py-3 rounded-2xl text-center max-w-md mx-4 animate-bounce">
       <div className="flex items-center justify-center gap-2 text-red-400 font-bungee text-sm tracking-widest">
@@ -54,6 +72,13 @@ function Home() {
         Delhi skyline. Get ready to run!
       </div>
     </div>
+    <button
+      type="button"
+      id="btn-skip-intro"
+      className="interactive mt-3 px-4 py-1.5 rounded-full bg-black/60 border border-amber-400/50 text-amber-300 font-bungee text-xs tracking-wider hover:bg-amber-500 hover:text-black transition shadow-lg active:scale-95"
+    >
+      SKIP INTRO ⏩
+    </button>
   </div>
 
   <div id="hud" className="hud-layer flex flex-col justify-between p-3 sm:p-5 hidden">
@@ -103,25 +128,6 @@ function Home() {
         </div>
       </div>
     </div>
-
-    
-    <div className="w-full max-w-md mx-auto flex items-end justify-between interactive pb-2 sm:pb-4 px-2">
-      <div className="flex gap-2">
-        <button type="button" id="btn-left" className="w-16 h-16 sm:w-20 sm:h-20 glass-card rounded-2xl flex items-center justify-center text-3xl active:scale-90 transition border-amber-400/40 active:bg-amber-500/40 shadow-xl">
-          ◀
-        </button>
-        <button type="button" id="btn-right" className="w-16 h-16 sm:w-20 sm:h-20 glass-card rounded-2xl flex items-center justify-center text-3xl active:scale-90 transition border-amber-400/40 active:bg-amber-500/40 shadow-xl">
-          ▶
-        </button>
-      </div>
-
-      <div className="flex gap-2">
-        <button type="button" id="btn-jump" className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-t from-amber-600 to-yellow-400 rounded-2xl flex flex-col items-center justify-center active:scale-90 transition border-2 border-yellow-200 active:brightness-125 shadow-2xl">
-          <span className="text-2xl text-black">🚀</span>
-          <span className="text-[10px] font-bungee tracking-wide text-black font-black">JUMP</span>
-        </button>
-      </div>
-    </div>
   </div>
 
   
@@ -146,21 +152,6 @@ function Home() {
         <div>
           <div className="text-[11px] text-gray-400 uppercase font-bold tracking-wider">Best Samosas</div>
           <div id="menu-best-coins" className="text-2xl font-bungee text-yellow-300">0 🥟</div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2 text-left text-xs text-gray-300 mb-5 bg-white/5 p-3 rounded-2xl border border-white/10">
-        <div className="flex items-center gap-2">
-          <span className="bg-black/60 px-2 py-1 rounded text-amber-400 font-mono text-[10px] border border-amber-500/30">A / ◀</span>
-          <span>Dodge Left</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="bg-black/60 px-2 py-1 rounded text-amber-400 font-mono text-[10px] border border-amber-500/30">D / ▶</span>
-          <span>Dodge Right</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="bg-black/60 px-2 py-1 rounded text-green-400 font-mono text-[10px] border border-green-500/30">W / 🔼</span>
-          <span>Jump Barrier</span>
         </div>
       </div>
 

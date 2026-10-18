@@ -569,6 +569,28 @@ import * as THREE from "three";
           osc.stop(now + 0.25);
         } catch (e) {}
       }
+
+      playCountdownBeep(isGo = false, freq = 520) {
+        if (!this.ctx || this.isMuted) return;
+        try {
+          this.ensureCtx();
+          const ctx = this.ctx;
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = isGo ? 'triangle' : 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+          if (isGo) {
+            osc.frequency.exponentialRampToValueAtTime(1250, now + 0.2);
+          }
+          gain.gain.setValueAtTime(0.32, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + (isGo ? 0.38 : 0.16));
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + (isGo ? 0.4 : 0.18));
+        } catch (e) {}
+      }
     }
 
     const audio = new DelhiAudioEngine();
@@ -600,9 +622,12 @@ import * as THREE from "three";
       CUTSCENE: 1,
       PLAYING: 2,
       CAUGHT: 3,     // Dramatic tackle and biting sequence
-      GAMEOVER: 4
+      GAMEOVER: 4,
+      COUNTDOWN: 5
     };
     let currentGameState = STATE.MENU;
+    let countdownTimer = 0;
+    let countdownStep = -1;
 
     let cutsceneProgress = 0;
     const CUTSCENE_DURATION = 16.4;
@@ -2371,21 +2396,39 @@ import * as THREE from "three";
       bindClick('btn-jump', () => jump());
 
       let touchStartX = 0, touchStartY = 0;
+      let touchStartTime = 0;
       const onTouchStart = (e) => {
         try { audio.ensureCtx(); } catch (err) {}
         if (!e.touches[0]) return;
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
+        touchStartTime = performance.now();
       };
       const onTouchEnd = (e) => {
         if (currentGameState !== STATE.PLAYING) return;
         if (!e.changedTouches[0]) return;
-        const dx = e.changedTouches[0].clientX - touchStartX;
-        const dy = e.changedTouches[0].clientY - touchStartY;
-        if (Math.max(Math.abs(dx), Math.abs(dy)) > 25) {
+        const touch = e.changedTouches[0];
+        const dx = touch.clientX - touchStartX;
+        const dy = touch.clientY - touchStartY;
+        const dist = Math.max(Math.abs(dx), Math.abs(dy));
+        const duration = performance.now() - touchStartTime;
+
+        if (dist > 25) {
           if (Math.abs(dx) > Math.abs(dy)) {
             moveLane(dx > 0 ? 1 : -1);
           } else if (dy < 0) {
+            jump();
+          } else if (dy > 0) {
+            slide();
+          }
+        } else if (duration < 350) {
+          // Tap zones on screen: left 40% dodges left, right 40% dodges right, center jumps
+          const w = window.innerWidth;
+          if (touch.clientX < w * 0.4) {
+            moveLane(-1);
+          } else if (touch.clientX > w * 0.6) {
+            moveLane(1);
+          } else {
             jump();
           }
         }
@@ -2409,6 +2452,11 @@ import * as THREE from "three";
 
       bindClick('btn-start', startCutsceneIntro);
       bindClick('btn-restart', startCutsceneIntro);
+      bindClick('btn-skip-intro', () => {
+        if (currentGameState === STATE.CUTSCENE) {
+          startCountdown();
+        }
+      });
 
       const photoInput = document.getElementById('photo-input');
       if (photoInput) {
@@ -2461,6 +2509,108 @@ import * as THREE from "three";
         audio.playSlide();
       } else if (!player.isGrounded) {
         player.vy = -16;
+      }
+    }
+
+    function startCountdown() {
+      currentGameState = STATE.COUNTDOWN;
+      countdownStep = 3;
+      countdownTimer = 0;
+
+      camera.up.set(0, 1, 0);
+      camera.position.set(0, 4.2, player.z + 7.5);
+      camera.lookAt(0, 1.8, player.z - 12);
+
+      if (dipkeGroup) {
+        dipkeGroup.visible = true;
+        dipkeGroup.position.set(player.x, 0, player.z);
+        dipkeGroup.rotation.set(0, 0, 0);
+      }
+      if (dipkeShadow) dipkeShadow.visible = true;
+      policeOfficers.forEach((c) => {
+        if (c.group) {
+          c.group.visible = true;
+          c.group.position.set(c.baseOffsetX, 0, player.z + c.baseOffsetZ);
+        }
+      });
+      if (metroTrain) {
+        metroTrainActive = false;
+        metroTrain.visible = false;
+      }
+      metroTimer = 8;
+
+      const cutsceneBanner = document.getElementById('cutscene-banner');
+      if (cutsceneBanner) cutsceneBanner.classList.add('hidden');
+      const hudEl = document.getElementById('hud');
+      if (hudEl) hudEl.classList.remove('hidden');
+
+      const overlay = document.getElementById('countdown-overlay');
+      if (overlay) overlay.classList.remove('hidden');
+
+      showCountdownNumber(3);
+    }
+
+    function showCountdownNumber(num: number) {
+      const el = document.getElementById('countdown-number');
+      const sub = document.getElementById('countdown-subtext');
+      if (!el || !sub) return;
+
+      el.classList.remove('countdown-pop');
+      void el.offsetWidth;
+      el.classList.add('countdown-pop');
+
+      if (num === 3) {
+        el.textContent = "3";
+        el.className = "text-8xl sm:text-9xl font-bungee font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 to-amber-500 drop-shadow-[0_14px_35px_rgba(0,0,0,0.95)] countdown-pop";
+        sub.textContent = "READY? • तैयार हो जाओ!";
+        audio.playCountdownBeep(false, 520);
+      } else if (num === 2) {
+        el.textContent = "2";
+        el.className = "text-8xl sm:text-9xl font-bungee font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-400 to-orange-500 drop-shadow-[0_14px_35px_rgba(0,0,0,0.95)] countdown-pop";
+        sub.textContent = "SET! • ध्यान से!";
+        audio.playCountdownBeep(false, 640);
+      } else if (num === 1) {
+        el.textContent = "1";
+        el.className = "text-8xl sm:text-9xl font-bungee font-black text-transparent bg-clip-text bg-gradient-to-b from-orange-500 to-red-500 drop-shadow-[0_14px_35px_rgba(0,0,0,0.95)] countdown-pop";
+        sub.textContent = "POLICE IS HERE! • पुलिस आ गई!";
+        audio.playCountdownBeep(false, 800);
+      } else if (num === 0) {
+        el.textContent = "भाग!";
+        el.className = "text-8xl sm:text-9xl font-bungee font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-yellow-300 to-amber-400 drop-shadow-[0_14px_35px_rgba(0,0,0,0.95)] countdown-pop scale-110";
+        sub.textContent = "BHAAG DIPKE BHAAG! 🏃💨";
+        audio.playCountdownBeep(true, 1174);
+        audio.playHorn();
+      }
+    }
+
+    function updateCountdown(dt: number) {
+      countdownTimer += dt;
+      player.runAnimTime += dt * 6;
+      animateDipkeLimbs(player.runAnimTime);
+      syncShadow();
+
+      camera.position.set(0, 4.2, player.z + 7.5);
+      camera.lookAt(0, 1.8, player.z - 12);
+
+      policeOfficers.forEach((cop) => {
+        if (cop.group) {
+          cop.group.position.z = player.z + cop.baseOffsetZ;
+        }
+      });
+
+      if (countdownStep === 3 && countdownTimer >= 0.75) {
+        countdownStep = 2;
+        showCountdownNumber(2);
+      } else if (countdownStep === 2 && countdownTimer >= 1.5) {
+        countdownStep = 1;
+        showCountdownNumber(1);
+      } else if (countdownStep === 1 && countdownTimer >= 2.25) {
+        countdownStep = 0;
+        showCountdownNumber(0);
+      } else if (countdownStep === 0 && countdownTimer >= 2.9) {
+        const overlay = document.getElementById('countdown-overlay');
+        if (overlay) overlay.classList.add('hidden');
+        currentGameState = STATE.PLAYING;
       }
     }
 
@@ -2552,7 +2702,8 @@ import * as THREE from "three";
 
       document.getElementById('menu-modal').classList.add('hidden');
       document.getElementById('gameover-modal').classList.add('hidden');
-      document.getElementById('cutscene-banner').classList.add('hidden');
+      document.getElementById('cutscene-banner')?.classList.remove('hidden');
+      document.getElementById('countdown-overlay')?.classList.add('hidden');
       document.getElementById('hud').classList.add('hidden');
       audio.playMetroRumble();
 
@@ -2573,6 +2724,8 @@ import * as THREE from "three";
 
       if (currentGameState === STATE.CUTSCENE) {
         updateCutscene(frameDt);
+      } else if (currentGameState === STATE.COUNTDOWN) {
+        updateCountdown(frameDt);
       } else if (currentGameState === STATE.PLAYING) {
         physAcc += frameDt;
         let steps = 0;
@@ -2715,19 +2868,7 @@ import * as THREE from "three";
       });
 
       if (cutsceneProgress >= 1.0) {
-        camera.up.set(0, 1, 0);
-        if (dipkeGroup) dipkeGroup.visible = true;
-        if (dipkeShadow) dipkeShadow.visible = true;
-        policeOfficers.forEach((c) => { if (c.group) c.group.visible = true; });
-        if (metroTrain) {
-          metroTrainActive = false;
-          metroTrain.visible = false;
-        }
-        metroTimer = 8;
-        currentGameState = STATE.PLAYING;
-        document.getElementById('cutscene-banner').classList.add('hidden');
-        document.getElementById('hud').classList.remove('hidden');
-        audio.playHorn();
+        startCountdown();
       }
     }
 
