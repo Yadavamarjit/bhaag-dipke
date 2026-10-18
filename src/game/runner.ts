@@ -684,6 +684,9 @@ import * as THREE from "three";
       gold: new THREE.MeshStandardMaterial({ color: 0xfbbf24, roughness: 0.2, metalness: 0.85 }),
       samosaCrust: new THREE.MeshLambertMaterial({ color: 0xd97706 }),
       goldenSamosa: new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.2, metalness: 0.9, emissive: 0xb45309 }),
+      cashGreen500: new THREE.MeshLambertMaterial({ color: 0x4ade80 }),
+      cashPink2000: new THREE.MeshLambertMaterial({ color: 0xf43f5e }),
+      cashBand: new THREE.MeshLambertMaterial({ color: 0xfef9c3 }),
       ringGlow: new THREE.MeshBasicMaterial({ color: 0x38bdf8 }),
       jetpackMetal: new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.8, roughness: 0.3 }),
       jetpackFlame: new THREE.MeshBasicMaterial({ color: 0xf97316 }),
@@ -2026,7 +2029,7 @@ import * as THREE from "three";
       ketli.position.set(0.3, 1.05, 0);
       stall.add(ketli);
 
-      const sign = labelPlane("DETAINED?\nSAMOSA BAAD MEIN", "#fef08a", "#7f1d1d", 2.2, 0.7);
+      const sign = labelPlane("DETAINED?\nCASH SEIZED", "#fef08a", "#7f1d1d", 2.2, 0.7);
       sign.position.set(0, 2.45, 0);
       stall.add(sign);
 
@@ -2408,15 +2411,38 @@ import * as THREE from "three";
       return barricade;
     }
 
-    function createSamosaMesh(isGolden = false) {
-      const samosa = new THREE.Group();
-      const geom = new THREE.ConeGeometry(isGolden ? 0.5 : 0.42, isGolden ? 0.65 : 0.55, 3);
-      const mesh = new THREE.Mesh(geom, isGolden ? mats.goldenSamosa : mats.samosaCrust);
-      mesh.rotation.x = Math.PI / 2;
-      samosa.add(mesh);
+    const cashStackGeo = new THREE.BoxGeometry(0.78, 0.26, 1.25);
+    const cashBandGeo = new THREE.BoxGeometry(0.81, 0.27, 0.38);
 
-      samosa.userData = { type: 'SAMOSA', value: isGolden ? 3 : 1, isSkyItem: isGolden };
-      return samosa;
+    function createCashBundleMesh(isRare = false) {
+      const bundle = new THREE.Group();
+
+      // Main currency notes stack (Green ₹500 or Pink ₹2000)
+      const stack = new THREE.Mesh(cashStackGeo, isRare ? mats.cashPink2000 : mats.cashGreen500);
+      bundle.add(stack);
+
+      // Paper bank strap around middle of bundle
+      const band = new THREE.Mesh(cashBandGeo, mats.cashBand);
+      bundle.add(band);
+
+      // Top printed denomination face
+      const topFace = labelPlane(isRare ? "₹2000" : "₹500", isRare ? "#831843" : "#065f46", "#ffffff", 0.72, 0.36);
+      topFace.rotation.x = -Math.PI / 2;
+      topFace.position.set(0, 0.135, 0);
+      bundle.add(topFace);
+
+      // Bottom printed face
+      const bottomFace = labelPlane(isRare ? "₹2000" : "₹500", isRare ? "#831843" : "#065f46", "#ffffff", 0.72, 0.36);
+      bottomFace.rotation.x = Math.PI / 2;
+      bottomFace.position.set(0, -0.135, 0);
+      bundle.add(bottomFace);
+
+      bundle.userData = { type: 'CASH', value: isRare ? 5 : 1, isSkyItem: isRare };
+      return bundle;
+    }
+
+    function createSamosaMesh(isGolden = false) {
+      return createCashBundleMesh(isGolden);
     }
 
     function createSkyRingMesh() {
@@ -2740,7 +2766,8 @@ import * as THREE from "three";
           const dist = Math.floor(player.distance);
           const coins = player.coins;
           const score = player.score;
-          const text = `🚨 Delhi Police caught me in Bhaag Dipke Bhaag!\n🏃 Distance: ${dist}m\n🥟 Samosas: ${coins}\n🏆 Score: ${score}\nCan you escape the Delhi Police? Play now: https://bhaag-dipke.vercel.app/`;
+          const cashAmount = (coins * 500).toLocaleString('en-IN');
+          const text = `🚨 Delhi Police caught me in Bhaag Dipke Bhaag!\n🏃 Distance: ${dist}m\n💵 Cash Stash: ₹${cashAmount} (${coins} Bundles)\n🏆 Score: ${score}\nCan you escape the Delhi Police? Play now: https://bhaag-dipke.vercel.app/`;
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text).then(() => {
               const label = document.getElementById('share-btn-text');
@@ -3510,7 +3537,7 @@ import * as THREE from "three";
         const dz = Math.abs(item.position.z - player.z);
 
         if (dx < 1.3 && dy < 2.0 && dz < 1.6) {
-          if (item.userData.type === 'SAMOSA') {
+          if (item.userData.type === 'CASH' || item.userData.type === 'SAMOSA') {
             const multi = (player.powerup === 'CHAI_POWER') ? 2 : 1;
             player.coins += (item.userData.value || 1) * multi;
             audio.playPickup();
@@ -3553,7 +3580,7 @@ import * as THREE from "three";
         pName.textContent = 'Chai Magnet Active';
         pIcon.textContent = '🧲';
       } else {
-        pName.textContent = '2x Samosa Multiplier';
+        pName.textContent = '2X Cash Multiplier';
         pIcon.textContent = '☕';
       }
     }
@@ -3698,7 +3725,7 @@ import * as THREE from "three";
       const goDistEl = document.getElementById('go-dist');
       if (goDistEl) goDistEl.textContent = Math.floor(player.distance) + ' m';
       const goCoinsEl = document.getElementById('go-coins');
-      if (goCoinsEl) goCoinsEl.textContent = player.coins + ' 🥟';
+      if (goCoinsEl) goCoinsEl.textContent = '₹' + (player.coins * 500).toLocaleString('en-IN') + ' (' + player.coins + ' 💵)';
       const goScoreEl = document.getElementById('go-score');
       if (goScoreEl) goScoreEl.textContent = player.score.toString();
 
@@ -3718,7 +3745,7 @@ import * as THREE from "three";
 
     function updateHUD() {
       document.getElementById('hud-distance').textContent = Math.floor(player.distance);
-      document.getElementById('hud-coins').textContent = player.coins;
+      document.getElementById('hud-coins').textContent = '₹' + (player.coins * 500).toLocaleString('en-IN');
 
       const landmarkIdx = Math.floor((player.distance / 160) % DELHI_LANDMARKS.length);
       document.getElementById('hud-landmark').textContent = DELHI_LANDMARKS[landmarkIdx];
@@ -3733,7 +3760,7 @@ import * as THREE from "three";
         localStorage.setItem('bhaag_best_coins', bestCoins.toString());
 
         document.getElementById('menu-best-dist').textContent = bestDist + ' m';
-        document.getElementById('menu-best-coins').textContent = bestCoins + ' 🥟';
+        document.getElementById('menu-best-coins').textContent = bestCoins + ' 💵';
       } catch (e) {}
     }
 
@@ -3742,7 +3769,7 @@ import * as THREE from "three";
         const bestDist = localStorage.getItem('bhaag_best_dist') || '0';
         const bestCoins = localStorage.getItem('bhaag_best_coins') || '0';
         document.getElementById('menu-best-dist').textContent = bestDist + ' m';
-        document.getElementById('menu-best-coins').textContent = bestCoins + ' 🥟';
+        document.getElementById('menu-best-coins').textContent = bestCoins + ' 💵';
       } catch (e) {}
     }
 

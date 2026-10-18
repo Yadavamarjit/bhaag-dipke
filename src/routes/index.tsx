@@ -56,11 +56,11 @@ function Home() {
   <div id="hud" className="hud-layer flex flex-col justify-between p-3 sm:p-5 hidden">
     <div className="flex items-start justify-between w-full max-w-5xl mx-auto">
       <div className="flex flex-col gap-1.5">
-        <div className="glass-card px-3.5 py-1.5 rounded-2xl flex items-center gap-2 shadow-lg border-yellow-500/40">
-          <span className="text-2xl drop-shadow">🥟</span>
+        <div className="glass-card px-3.5 py-1.5 rounded-2xl flex items-center gap-2 shadow-lg border-emerald-500/40">
+          <span className="text-2xl drop-shadow">💵</span>
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-amber-300 font-bold">Samosas</div>
-            <div id="hud-coins" className="text-xl sm:text-2xl font-bungee text-yellow-300 leading-tight">0</div>
+            <div className="text-[10px] uppercase tracking-wider text-emerald-300 font-bold">Cash Stash</div>
+            <div id="hud-coins" className="text-xl sm:text-2xl font-bungee text-emerald-300 leading-tight">₹0</div>
           </div>
         </div>
 
@@ -109,12 +109,12 @@ function Home() {
   <div id="menu-modal" className="hud-layer flex flex-col justify-between p-3.5 sm:p-6 select-none">
     {/* Top Header Deck */}
     <div className="w-full max-w-5xl mx-auto flex items-start sm:items-center justify-between interactive gap-2 pt-1">
-      {/* Left: Best Samosas Pill */}
+      {/* Left: Best Cash Pill */}
       <div className="glass-card gold-glow-border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-2xl flex items-center gap-2 shadow-xl">
-        <span className="text-2xl sm:text-3xl filter drop-shadow">🥟</span>
+        <span className="text-2xl sm:text-3xl filter drop-shadow">💵</span>
         <div>
-          <div className="text-[9px] sm:text-[10px] uppercase font-bold text-yellow-300/80 tracking-wider">Top Samosas</div>
-          <div id="menu-best-coins" className="text-base sm:text-2xl font-bungee text-yellow-300 leading-tight">0 🥟</div>
+          <div className="text-[9px] sm:text-[10px] uppercase font-bold text-emerald-300/90 tracking-wider">Top Cash</div>
+          <div id="menu-best-coins" className="text-base sm:text-2xl font-bungee text-emerald-300 leading-tight">₹0</div>
         </div>
       </div>
 
@@ -279,22 +279,22 @@ function Home() {
 
         {/* Collectibles Section */}
         <div className="mb-4">
-          <div className="text-xs font-bungee uppercase text-yellow-400 mb-2 flex items-center gap-1.5">
-            <span>🥟</span> WHAT TO COLLECT (क्या उठाएं)
+          <div className="text-xs font-bungee uppercase text-emerald-400 mb-2 flex items-center gap-1.5">
+            <span>💵</span> WHAT TO COLLECT (क्या उठाएं)
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-            <div className="bg-black/50 p-2.5 rounded-xl border border-yellow-500/20 flex items-start gap-2.5">
-              <span className="text-2xl">🥟</span>
+            <div className="bg-black/50 p-2.5 rounded-xl border border-emerald-500/30 flex items-start gap-2.5">
+              <span className="text-2xl">💵</span>
               <div>
-                <div className="font-bold text-yellow-300">Hot Garam Samosa</div>
-                <div className="text-gray-300 text-[11px]">Delhi&apos;s street fuel! Boosts your score multiplier and keeps the chase going.</div>
+                <div className="font-bold text-emerald-300">₹500 Currency Bundle (गड्डी)</div>
+                <div className="text-gray-300 text-[11px]">Crisp green currency stack! Adds ₹500 cash to your total stash and boosts score.</div>
               </div>
             </div>
-            <div className="bg-black/50 p-2.5 rounded-xl border border-amber-500/20 flex items-start gap-2.5">
-              <span className="text-2xl">⭐</span>
+            <div className="bg-black/50 p-2.5 rounded-xl border border-rose-500/30 flex items-start gap-2.5">
+              <span className="text-2xl">💰</span>
               <div>
-                <div className="font-bold text-amber-300">Golden Samosa</div>
-                <div className="text-gray-300 text-[11px]">Rare delicacy! Awards +10 samosas in one crunchy bite.</div>
+                <div className="font-bold text-rose-300">₹2000 Pink Note Stack</div>
+                <div className="text-gray-300 text-[11px]">High-denomination rare bundle! Awards 5 bundles (+₹2,500 cash) instantly.</div>
               </div>
             </div>
           </div>
@@ -310,21 +310,21 @@ function Home() {
               <span className="text-2xl">🚀</span>
               <div>
                 <div className="font-bold text-sky-300">Desi Jetpack</div>
-                <div className="text-gray-300 text-[11px]">Soar high into the Delhi sky with dual flames and collect samosa rings safely!</div>
+                <div className="text-gray-300 text-[11px]">Soar high into the Delhi sky with dual flames and collect currency bundles safely!</div>
               </div>
             </div>
             <div className="bg-black/50 p-2.5 rounded-xl border border-amber-500/30 flex items-start gap-2.5">
               <span className="text-2xl">☕</span>
               <div>
                 <div className="font-bold text-amber-300">Garam Chai (2X Multiplier)</div>
-                <div className="text-gray-300 text-[11px]">Hot cutting tea that doubles all your score and samosas for 10 seconds!</div>
+                <div className="text-gray-300 text-[11px]">Hot cutting tea that doubles all your score and cash pickups for 10 seconds!</div>
               </div>
             </div>
             <div className="bg-black/50 p-2.5 rounded-xl border border-red-500/30 flex items-start gap-2.5">
               <span className="text-2xl">🧲</span>
               <div>
-                <div className="font-bold text-red-300">Samosa Magnet</div>
-                <div className="text-gray-300 text-[11px]">Pulls all delicious samosas from all 3 lanes directly towards Dipke!</div>
+                <div className="font-bold text-red-300">Cash Magnet</div>
+                <div className="text-gray-300 text-[11px]">Pulls all currency bundles from all 3 lanes directly towards Dipke!</div>
               </div>
             </div>
             <div className="bg-black/50 p-2.5 rounded-xl border border-emerald-500/30 flex items-start gap-2.5">
@@ -467,9 +467,9 @@ function Home() {
           <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Distance Run</div>
           <div id="go-dist" className="font-bungee text-xl sm:text-2xl text-white mt-0.5">0 m</div>
         </div>
-        <div className="digital-meter rounded-2xl p-3 border border-yellow-500/30">
-          <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Samosas Eaten</div>
-          <div id="go-coins" className="font-bungee text-xl sm:text-2xl text-yellow-300 mt-0.5">0 🥟</div>
+        <div className="digital-meter rounded-2xl p-3 border border-emerald-500/30">
+          <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Cash Recovered (नकदी)</div>
+          <div id="go-coins" className="font-bungee text-xl sm:text-2xl text-emerald-300 mt-0.5">₹0</div>
         </div>
       </div>
 
