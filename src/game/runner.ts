@@ -2877,6 +2877,19 @@ import * as THREE from "three";
         });
       }
 
+      function getOrCreateUserId() {
+        try {
+          let uid = localStorage.getItem('bhaag_user_id');
+          if (!uid) {
+            uid = 'usr_' + Math.random().toString(36).substring(2, 8) + Date.now().toString(36).substring(4);
+            localStorage.setItem('bhaag_user_id', uid);
+          }
+          return uid;
+        } catch {
+          return 'player';
+        }
+      }
+
       const shareBtn = document.getElementById('btn-share-score');
       if (shareBtn) {
         shareBtn.addEventListener('click', async (e) => {
@@ -2885,7 +2898,9 @@ import * as THREE from "three";
           const coins = player.coins;
           const score = player.score;
           const cashAmount = (coins * 100).toLocaleString('en-IN');
-          const shareUrl = window.location.origin || 'https://bhaag-dipke.vercel.app/';
+          const uid = getOrCreateUserId();
+          const origin = window.location.origin || 'https://bhaag-dipke.vercel.app';
+          const shareUrl = `${origin}/?ref=${encodeURIComponent(uid)}&utm_source=game_over&utm_medium=referral&utm_campaign=challan_share`;
           const text = `🚨 Detained in Bhaag Dipke Bhaag!\n🏃 Distance: ${dist}m\n💵 Cash: ₹${cashAmount}\n🏆 Score: ${score}\nCan you escape the Delhi Police? Play now: ${shareUrl}`;
 
           if (navigator.share) {
@@ -2906,7 +2921,7 @@ import * as THREE from "three";
               const label = document.getElementById('share-btn-text');
               if (label) {
                 const prev = label.textContent;
-                label.textContent = "✅ Challan Copied to Clipboard!";
+                label.textContent = "✅ Game Link Copied!";
                 setTimeout(() => { if (label) label.textContent = prev; }, 2200);
               }
             }).catch(() => {});

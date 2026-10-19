@@ -37,11 +37,27 @@ function Home() {
     } catch {}
   }, []);
 
+  const getOrCreateUserId = () => {
+    if (typeof window === "undefined") return "anon";
+    try {
+      let uid = localStorage.getItem("bhaag_user_id");
+      if (!uid) {
+        uid = "usr_" + Math.random().toString(36).substring(2, 8) + Date.now().toString(36).substring(4);
+        localStorage.setItem("bhaag_user_id", uid);
+      }
+      return uid;
+    } catch {
+      return "player";
+    }
+  };
+
   const handleShareGame = async () => {
-    const shareUrl = typeof window !== "undefined" ? window.location.href : "https://bhaag-dipke.vercel.app/";
+    const uid = getOrCreateUserId();
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://bhaag-dipke.vercel.app";
+    const shareUrl = `${origin}/?ref=${encodeURIComponent(uid)}&utm_source=menu_share&utm_medium=referral&utm_campaign=game_share`;
     const shareData = {
       title: "भाग Dipke भाग! 🏃💨 - Delhi Street Runner",
-      text: "🚨 Can you help Dipke dodge Delhi Police, DTC Buses, and Metro barricades across Delhi? Play now!",
+      text: `🚨 Can you help Dipke dodge Delhi Police, DTC Buses, and Metro barricades across Delhi? Play now: ${shareUrl}`,
       url: shareUrl,
     };
 
@@ -59,7 +75,7 @@ function Home() {
         await navigator.clipboard.writeText(
           `🚨 भाग Dipke भाग! - Delhi Street Runner\nCan you escape the Delhi Police? Play now: ${shareUrl}`
         );
-        setShareToast("Link copied to clipboard! 📋 Share with friends!");
+        setShareToast("Game link copied! 📋 Share with friends!");
         setTimeout(() => setShareToast(""), 3000);
       }
     } catch {
@@ -72,51 +88,73 @@ function Home() {
     const host = document.getElementById("game-canvas-container");
     const cleanup = host ? retainGame(host) : undefined;
 
-    // Track first-time visitor analytics (Country, City, IP, Device)
-    if (typeof window !== "undefined" && !localStorage.getItem("bhaag_visited")) {
-      const trackFirstVisit = async () => {
+    // Track first-time visitor analytics with referrer user ID and UTM tags
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const incomingRef = urlParams.get("ref") || urlParams.get("referrer");
+      const incomingUtmSource = urlParams.get("utm_source");
+      const incomingUtmMedium = urlParams.get("utm_medium");
+      const incomingUtmCampaign = urlParams.get("utm_campaign");
+
+      if (incomingRef) {
         try {
-          let geo: {
-            ip?: string;
-            city?: string;
-            region?: string;
-            country_name?: string;
-            country_code?: string;
-            latitude?: number;
-            longitude?: number;
-          } = {};
+          localStorage.setItem("bhaag_referred_by", incomingRef);
+        } catch {}
+      }
 
+      const uid = getOrCreateUserId();
+
+      if (!localStorage.getItem("bhaag_visited")) {
+        const trackFirstVisit = async () => {
           try {
-            const res = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(3500) });
-            if (res.ok) {
-              geo = await res.json();
+            let geo: {
+              ip?: string;
+              city?: string;
+              region?: string;
+              country_name?: string;
+              country_code?: string;
+              latitude?: number;
+              longitude?: number;
+            } = {};
+
+            try {
+              const res = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(3500) });
+              if (res.ok) {
+                geo = await res.json();
+              }
+            } catch {
+              // Ignore if rate-limited or offline
             }
-          } catch {
-            // Ignore if rate-limited or offline
+
+            const device = /Mobi|Android|iPhone/i.test(navigator.userAgent) ? "Mobile" : "Desktop";
+            const screenResolution = `${window.screen.width}x${window.screen.height}`;
+            const referrer = document.referrer || "";
+            const referredBy = incomingRef || localStorage.getItem("bhaag_referred_by") || undefined;
+
+            await fetch("https://ydvamar.online/api/game/visitor", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ...geo,
+                userId: uid,
+                referredBy,
+                utmSource: incomingUtmSource || undefined,
+                utmMedium: incomingUtmMedium || undefined,
+                utmCampaign: incomingUtmCampaign || undefined,
+                device,
+                screenResolution,
+                referrer,
+              }),
+            });
+
+            localStorage.setItem("bhaag_visited", "true");
+          } catch (e) {
+            console.warn("Visitor analytics fallback:", e);
           }
+        };
 
-          const device = /Mobi|Android|iPhone/i.test(navigator.userAgent) ? "Mobile" : "Desktop";
-          const screenResolution = `${window.screen.width}x${window.screen.height}`;
-          const referrer = document.referrer || "";
-
-          await fetch("https://ydvamar.online/api/game/visitor", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              ...geo,
-              device,
-              screenResolution,
-              referrer,
-            }),
-          });
-
-          localStorage.setItem("bhaag_visited", "true");
-        } catch (e) {
-          console.warn("Visitor analytics fallback:", e);
-        }
-      };
-
-      trackFirstVisit();
+        trackFirstVisit();
+      }
     }
 
     return cleanup;
@@ -823,7 +861,7 @@ function Home() {
           id="btn-share-score"
           className="w-full py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-200 transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
         >
-          <span id="share-btn-text">📤 Share Score</span>
+          <span id="share-btn-text">📤 Share</span>
         </button>
 
         <button
