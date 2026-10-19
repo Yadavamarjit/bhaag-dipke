@@ -3767,9 +3767,15 @@ import * as THREE from "three";
       const px = crashImpactX;
       const pz = crashImpactZ;
 
-      // Keep world elements, obstacles and street 100% visible!
-      obstacles.forEach((obs) => { obs.visible = true; });
-      collectibles.forEach((item) => { item.visible = true; });
+      // Keep collectibles clear during arrest
+      collectibles.forEach((item) => { item.visible = false; });
+
+      // Keep obstacle visible on impact (t < 0.4), then hide it so Dipke and cops are 100% unobstructed
+      if (t < 0.4) {
+        obstacles.forEach((obs) => { obs.visible = true; });
+      } else {
+        obstacles.forEach((obs) => { obs.visible = false; });
+      }
 
       // Dynamic Delhi Police emergency strobe lights
       if (policeLightRed && policeLightBlue) {
