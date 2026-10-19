@@ -635,11 +635,16 @@ import * as THREE from "three";
     let runnersShownTimer = 0;
     let tehelkaPlayedInCutscene = false;
 
-    // Caught tackle variables
+    // Caught tackle & outro cutscene variables
     let caughtTimer = 0;
-    const CAUGHT_DURATION = 4.2;
+    const CAUGHT_DURATION = 3.2;
     let pendingCrashReason = 'BUS';
     let cameraShake = { x: 0, y: 0 };
+    let crashImpactX = 0;
+    let crashImpactZ = 0;
+    let crashPlayerY = 0;
+    let policeLightRed = null;
+    let policeLightBlue = null;
 
     const DELHI_LANDMARKS = [
       "Connaught Place Radial (Inner Circle)",
@@ -837,6 +842,12 @@ import * as THREE from "three";
       dirLight.shadow.camera.top = 22;
       dirLight.shadow.camera.bottom = -22;
       scene.add(dirLight);
+ 
+      // Delhi Police emergency strobe lights for cinematic arrest outro
+      policeLightRed = new THREE.PointLight(0xef4444, 0, 24, 1.2);
+      policeLightBlue = new THREE.PointLight(0x3b82f6, 0, 24, 1.2);
+      scene.add(policeLightRed);
+      scene.add(policeLightBlue);
 
       createDelhiSkylineHorizon();
       createOverheadMetroTrain();
@@ -3074,6 +3085,8 @@ import * as THREE from "three";
 
       // Clear caught & flight UI
       if (caughtTrio) caughtTrio.visible = false;
+      if (policeLightRed) policeLightRed.intensity = 0;
+      if (policeLightBlue) policeLightBlue.intensity = 0;
 
       if (jetpackModel) jetpackModel.visible = false;
       document.getElementById('flight-fx').classList.add('opacity-0');
@@ -3736,91 +3749,130 @@ import * as THREE from "three";
       currentGameState = STATE.CAUGHT;
       pendingCrashReason = crashSource || 'BUS';
       caughtTimer = 0;
+      crashImpactX = player.x;
+      crashImpactZ = player.z;
+      crashPlayerY = player.y;
       player.isFlying = false;
       if (jetpackModel) jetpackModel.visible = false;
-      document.getElementById('flight-fx').classList.add('opacity-0');
+      document.getElementById('flight-fx')?.classList.add('opacity-0');
 
       audio.playCrash();
       audio.playPoliceSiren();
-      audio.playGameOver();
-      document.getElementById('hud').classList.add('hidden');
-    }
-
-    function beginRagdoll() {
-      ragdoll.y = Math.max(player.y, 0);
-      ragdoll.vy = Math.max(3.1, player.vy * 0.25 + 2.4);
-      ragdoll.pitch = dipkeGroup.rotation.x || 0;
-      ragdoll.roll = dipkeGroup.rotation.z || 0;
-      ragdoll.yaw = 0;
-      ragdoll.wp = -3.1;
-      ragdoll.wr = player.vx * 0.05;
-      ragdoll.wy = (Math.random() - 0.5) * 2.4;
-    }
-
-    function stepRagdoll(dt) {
-      ragdoll.vy -= 30 * dt;
-      ragdoll.y += ragdoll.vy * dt;
-      ragdoll.pitch += ragdoll.wp * dt;
-      ragdoll.roll += ragdoll.wr * dt;
-      ragdoll.yaw += ragdoll.wy * dt;
-      ragdoll.wp *= (1 - 0.8 * dt);
-      ragdoll.wr *= (1 - 1.4 * dt);
-      ragdoll.wy *= (1 - 0.9 * dt);
-      if (ragdoll.y <= 0.04) {
-        ragdoll.y = 0.04;
-        if (ragdoll.vy < -0.8) {
-          ragdoll.vy = -ragdoll.vy * 0.34;
-          ragdoll.wp *= -0.4;
-          ragdoll.wr *= 0.45;
-        } else {
-          ragdoll.vy = 0;
-        }
-      }
-      if (ragdoll.pitch < -1.28) {
-        ragdoll.pitch = -1.28;
-        if (ragdoll.wp < 0) ragdoll.wp *= -0.25;
-      }
-      dipkeGroup.position.set(player.x, ragdoll.y, player.z);
-      dipkeGroup.rotation.set(ragdoll.pitch, ragdoll.yaw, ragdoll.roll);
-      syncShadow();
+      document.getElementById('hud')?.classList.add('hidden');
     }
 
     function updateCaughtAnimation(dt) {
       caughtTimer += dt;
-      const x = player.x;
-      const z = player.z - 1.2;
+      const t = caughtTimer;
+      const px = crashImpactX;
+      const pz = crashImpactZ;
 
-      if (dipkeGroup) dipkeGroup.visible = false;
-      if (dipkeShadow) dipkeShadow.visible = false;
-      policeOfficers.forEach((cop) => {
-        if (cop.group) cop.group.visible = false;
-      });
-      obstacles.forEach((obs) => { obs.visible = false; });
-      collectibles.forEach((item) => { item.visible = false; });
+      // Keep world elements, obstacles and street 100% visible!
+      obstacles.forEach((obs) => { obs.visible = true; });
+      collectibles.forEach((item) => { item.visible = true; });
 
-      if (caughtTrio && caughtFrames.length) {
-        caughtTrio.visible = true;
-        caughtTrio.position.x = x;
-        caughtTrio.position.z = z;
-        const n = caughtFrames.length;
-        const idx = Math.floor(caughtTimer * 5) % n;
-        if (caughtTrioMat.map !== caughtFrames[idx]) caughtTrioMat.map = caughtFrames[idx];
+      // Dynamic Delhi Police emergency strobe lights
+      if (policeLightRed && policeLightBlue) {
+        const strobe = Math.sin(t * 24);
+        policeLightRed.position.set(px - 1.5, 2.5, pz - 2.0);
+        policeLightBlue.position.set(px + 1.5, 2.5, pz - 2.0);
+        policeLightRed.intensity = strobe > 0 ? 8.0 : 0.3;
+        policeLightBlue.intensity = strobe <= 0 ? 8.0 : 0.3;
       }
 
-      camera.position.set(x, 1.55, z - 5.6);
-      camera.lookAt(x, 1.2, z);
+      if (t < 0.4) {
+        // Phase 1: Impact punch with camera shake behind Dipke
+        ensureCaughtTrio();
+        if (caughtTrio) caughtTrio.visible = false;
+        if (dipkeGroup) {
+          dipkeGroup.visible = true;
+          dipkeGroup.position.z = pz + (t / 0.4) * 0.7;
+          showPoseFrame(8);
+        }
+        if (dipkeShadow) dipkeShadow.visible = true;
+        policeOfficers.forEach((cop) => {
+          if (cop.group) {
+            cop.group.visible = true;
+            showCopRun(cop);
+          }
+        });
 
+        const shakeDecay = Math.max(0, (0.4 - t) / 0.4);
+        const shakeX = (Math.random() - 0.5) * shakeDecay * 0.45;
+        const shakeY = (Math.random() - 0.5) * shakeDecay * 0.35;
+        camera.position.set(px + shakeX, 3.2 + shakeY, pz + 5.5);
+        camera.lookAt(px, 1.4, pz - 2.5);
+      } else if (t < 0.75) {
+        // Phase 2: Smooth camera swoop around to the front of the crash site
+        const u = (t - 0.4) / 0.35;
+        const smoothU = u * u * (3 - 2 * u);
+
+        if (u > 0.4) {
+          if (dipkeGroup) dipkeGroup.visible = false;
+          if (dipkeShadow) dipkeShadow.visible = false;
+          policeOfficers.forEach((cop) => { if (cop.group) cop.group.visible = false; });
+          ensureCaughtTrio();
+          if (caughtTrio) {
+            caughtTrio.visible = true;
+            caughtTrio.position.set(px, 2.95 / 2 - 2.95 * (40 / 900), pz - 0.8);
+            caughtTrio.rotation.y = Math.PI;
+          }
+        }
+
+        const camX = px + Math.sin(smoothU * Math.PI) * 3.5;
+        const camY = mix(3.2, 1.65, smoothU);
+        const camZ = mix(pz + 5.5, pz - 5.6, smoothU);
+        camera.position.set(camX, camY, camZ);
+        camera.lookAt(px, 1.35, pz - 0.8);
+      } else {
+        // Phase 3: Live 8.5-FPS Flipbook Animation & Slow Dolly-In
+        if (dipkeGroup) dipkeGroup.visible = false;
+        if (dipkeShadow) dipkeShadow.visible = false;
+        policeOfficers.forEach((cop) => { if (cop.group) cop.group.visible = false; });
+        ensureCaughtTrio();
+
+        if (caughtTrio && caughtFrames.length) {
+          caughtTrio.visible = true;
+          caughtTrio.position.set(px, 2.95 / 2 - 2.95 * (40 / 900), pz - 0.8);
+          caughtTrio.rotation.y = Math.PI;
+
+          // Continuous 8.5-FPS animation through all 8 frames
+          const n = caughtFrames.length;
+          const frameIdx = Math.floor((t - 0.4) * 8.5) % n;
+          if (caughtTrioMat && caughtTrioMat.map !== caughtFrames[frameIdx]) {
+            caughtTrioMat.map = caughtFrames[frameIdx];
+            caughtTrioMat.needsUpdate = true;
+          }
+        }
+
+        // Slow cinematic push-in (dolly from pz - 5.6 to pz - 4.1)
+        const dollyU = Math.min(1, (t - 0.75) / (CAUGHT_DURATION - 0.75));
+        const smoothDolly = dollyU * dollyU * (3 - 2 * dollyU);
+        const camZ = mix(pz - 5.6, pz - 4.1, smoothDolly);
+        const camY = mix(1.65, 1.45, smoothDolly);
+        const breathX = Math.sin(t * 3.2) * 0.035;
+        const breathY = Math.cos(t * 2.5) * 0.025;
+
+        camera.position.set(px + breathX, camY + breathY, camZ);
+        camera.lookAt(px, 1.35, pz - 0.8);
+      }
+
+      // Phase 4: Completion -> Show Detained Screen
       if (caughtTimer >= CAUGHT_DURATION) {
         lastRunFrame = -1;
         if (caughtTrio) caughtTrio.visible = false;
         if (dipkeGroup) dipkeGroup.visible = true;
         if (dipkeShadow) dipkeShadow.visible = true;
+        if (policeLightRed) policeLightRed.intensity = 0;
+        if (policeLightBlue) policeLightBlue.intensity = 0;
         gameOver(pendingCrashReason);
       }
     }
 
     function gameOver(crashSource) {
       currentGameState = STATE.GAMEOVER;
+      if (policeLightRed) policeLightRed.intensity = 0;
+      if (policeLightBlue) policeLightBlue.intensity = 0;
       audio.playGameOver();
 
       const prevBestDist = parseInt(localStorage.getItem('bhaag_best_dist') || '0', 10);

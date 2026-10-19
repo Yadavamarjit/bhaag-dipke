@@ -17,12 +17,107 @@ function queueStart() {
 function Home() {
   const [showHelp, setShowHelp] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackName, setFeedbackName] = useState("");
+  const [feedbackEmail, setFeedbackEmail] = useState("");
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
+  const [feedbackSuccess, setFeedbackSuccess] = useState(false);
+  const [feedbackError, setFeedbackError] = useState("");
 
   useEffect(() => {
     const host = document.getElementById("game-canvas-container");
-    if (!host) return;
-    return retainGame(host);
+    const cleanup = host ? retainGame(host) : undefined;
+
+    // Track first-time visitor analytics (Country, City, IP, Device)
+    if (typeof window !== "undefined" && !localStorage.getItem("bhaag_visited")) {
+      const trackFirstVisit = async () => {
+        try {
+          let geo: {
+            ip?: string;
+            city?: string;
+            region?: string;
+            country_name?: string;
+            country_code?: string;
+            latitude?: number;
+            longitude?: number;
+          } = {};
+
+          try {
+            const res = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(3500) });
+            if (res.ok) {
+              geo = await res.json();
+            }
+          } catch {
+            // Ignore if rate-limited or offline
+          }
+
+          const device = /Mobi|Android|iPhone/i.test(navigator.userAgent) ? "Mobile" : "Desktop";
+          const screenResolution = `${window.screen.width}x${window.screen.height}`;
+          const referrer = document.referrer || "";
+
+          await fetch("https://ydvamar.online/api/game/visitor", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...geo,
+              device,
+              screenResolution,
+              referrer,
+            }),
+          });
+
+          localStorage.setItem("bhaag_visited", "true");
+        } catch (e) {
+          console.warn("Visitor analytics fallback:", e);
+        }
+      };
+
+      trackFirstVisit();
+    }
+
+    return cleanup;
   }, []);
+
+  const handleFeedbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedbackText.trim() || feedbackSubmitting) return;
+
+    setFeedbackSubmitting(true);
+    setFeedbackError("");
+
+    try {
+      const device = /Mobi|Android|iPhone/i.test(navigator.userAgent) ? "Mobile" : "Desktop";
+      const dist = document.getElementById("go-dist")?.textContent || document.getElementById("hud-distance")?.textContent || "0";
+      const coins = document.getElementById("go-coins")?.textContent || document.getElementById("hud-coins")?.textContent || "0";
+
+      const res = await fetch("https://ydvamar.online/api/game/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          feedback: feedbackText.trim(),
+          name: feedbackName.trim() || undefined,
+          email: feedbackEmail.trim() || undefined,
+          distance: parseInt(dist.replace(/[^\d]/g, ""), 10) || 0,
+          coins: parseInt(coins.replace(/[^\d]/g, ""), 10) || 0,
+          device,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Server error");
+
+      setFeedbackSuccess(true);
+      setTimeout(() => {
+        setFeedbackText("");
+        setFeedbackSuccess(false);
+        setShowFeedback(false);
+      }, 2400);
+    } catch {
+      setFeedbackError("Couldn't submit feedback right now. Please check your connection!");
+    } finally {
+      setFeedbackSubmitting(false);
+    }
+  };
 
   return (
     <main className="game-root relative h-[100dvh] w-full overflow-hidden text-white">
@@ -210,8 +305,8 @@ function Home() {
         <span id="btn-start-icon" className="text-xl sm:text-3xl animate-bounce">🔥</span>
       </button>
 
-      {/* Quick Action Bar: Audio Toggle, How to Play & Credits */}
-      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 w-full">
+      {/* Quick Action Bar: Audio Toggle, How to Play, Credits & Feedback */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 w-full">
         <button
           type="button"
           id="btn-audio-toggle"
@@ -232,6 +327,13 @@ function Home() {
           className="flex items-center justify-center gap-1 py-2 px-1.5 sm:px-2 rounded-xl border border-amber-400/40 bg-black/70 hover:bg-black/90 text-[10px] sm:text-xs font-bold text-amber-200 transition shadow-md active:scale-95 cursor-pointer truncate"
         >
           <span className="text-xs sm:text-sm shrink-0">❤️</span> <span className="truncate">Credits</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowFeedback(true)}
+          className="flex items-center justify-center gap-1 py-2 px-1.5 sm:px-2 rounded-xl border border-emerald-400/40 bg-black/70 hover:bg-black/90 text-[10px] sm:text-xs font-bold text-emerald-300 transition shadow-md active:scale-95 cursor-pointer truncate"
+        >
+          <span className="text-xs sm:text-sm shrink-0">💡</span> <span className="truncate">Feedback</span>
         </button>
       </div>
 
@@ -453,6 +555,109 @@ function Home() {
   )}
 
   {/* =========================================================================
+      FEEDBACK & SUGGESTIONS MODAL
+      ========================================================================= */}
+  {showFeedback && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 sm:p-5 select-none">
+      <div className="glass-card gold-glow-border relative w-full max-w-md rounded-3xl p-5 sm:p-6 text-left shadow-2xl text-white">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-yellow-500/30 mb-4">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl sm:text-3xl">💡</span>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bungee text-yellow-300 leading-tight">SUGGESTION / FEEDBACK</h2>
+              <p className="text-xs text-amber-200 font-hindi-style">सुझाव या समस्या भेजें</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setShowFeedback(false);
+              setFeedbackSuccess(false);
+              setFeedbackError("");
+            }}
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center font-bold text-lg cursor-pointer transition active:scale-90"
+          >
+            ✕
+          </button>
+        </div>
+
+        {feedbackSuccess ? (
+          <div className="py-8 text-center flex flex-col items-center gap-3">
+            <div className="text-5xl animate-bounce">🎉</div>
+            <h3 className="text-xl font-bungee text-emerald-300">THANK YOU, BRO!</h3>
+            <p className="text-xs sm:text-sm text-gray-200 max-w-xs">
+              Your suggestion has been sent directly to Amarjit&apos;s database. We&apos;ll check it out right away!
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={handleFeedbackSubmit} className="flex flex-col gap-3">
+            <div>
+              <label className="block text-xs font-bold text-amber-300 uppercase tracking-wider mb-1">
+                Your Suggestion / Feedback *
+              </label>
+              <textarea
+                required
+                rows={3}
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+                placeholder="e.g. Add Delhi Metro station tunnels, fix jump responsiveness, add auto-rickshaw turn sound..."
+                className="w-full rounded-xl bg-black/60 border border-white/20 focus:border-yellow-400 focus:outline-none p-3 text-xs sm:text-sm text-white placeholder-gray-500 resize-none transition"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div>
+                <label className="block text-[11px] font-bold text-gray-300 uppercase tracking-wider mb-1">
+                  Name (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={feedbackName}
+                  onChange={(e) => setFeedbackName(e.target.value)}
+                  placeholder="e.g. Rahul"
+                  className="w-full rounded-xl bg-black/60 border border-white/20 focus:border-yellow-400 focus:outline-none px-3 py-2 text-xs text-white placeholder-gray-500 transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-gray-300 uppercase tracking-wider mb-1">
+                  Email (Optional)
+                </label>
+                <input
+                  type="email"
+                  value={feedbackEmail}
+                  onChange={(e) => setFeedbackEmail(e.target.value)}
+                  placeholder="e.g. rahul@gmail.com"
+                  className="w-full rounded-xl bg-black/60 border border-white/20 focus:border-yellow-400 focus:outline-none px-3 py-2 text-xs text-white placeholder-gray-500 transition"
+                />
+              </div>
+            </div>
+
+            <p className="text-[10px] sm:text-[11px] text-amber-200/80 italic">
+              ✨ Optional: We will let you know once your suggestion is addressed or fixed!
+            </p>
+
+            {feedbackError && (
+              <div className="text-xs text-red-400 bg-red-950/60 p-2 rounded-lg border border-red-500/40">
+                {feedbackError}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={feedbackSubmitting || !feedbackText.trim()}
+              className="mt-1 w-full py-3 rounded-2xl bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 text-black font-bungee text-sm font-black tracking-wider uppercase hover:brightness-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg cursor-pointer"
+            >
+              {feedbackSubmitting ? "SENDING TO DEV..." : "SUBMIT FEEDBACK 🚀"}
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  )}
+
+  {/* =========================================================================
       PAUSE MODAL OVERLAY
       ========================================================================= */}
   <div id="pause-modal" className="hud-layer flex items-center justify-center p-4 bg-black/75 backdrop-blur-md hidden z-50 select-none">
@@ -558,6 +763,14 @@ function Home() {
           className="w-full py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-200 transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
         >
           <span id="share-btn-text">📋 Copy &amp; Share Score</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setShowFeedback(true)}
+          className="w-full py-2 rounded-xl border border-yellow-400/30 bg-black/60 hover:bg-black/80 text-[11px] font-bold text-yellow-300 transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+        >
+          <span>💡</span> <span>Got a Suggestion / Found a Bug?</span>
         </button>
       </div>
     </div>
