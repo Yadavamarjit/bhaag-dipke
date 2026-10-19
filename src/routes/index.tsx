@@ -24,6 +24,49 @@ function Home() {
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
   const [feedbackSuccess, setFeedbackSuccess] = useState(false);
   const [feedbackError, setFeedbackError] = useState("");
+  const [shareToast, setShareToast] = useState("");
+  const [totalCashDisplay, setTotalCashDisplay] = useState("₹0");
+
+  useEffect(() => {
+    try {
+      const savedCoins = parseInt(
+        localStorage.getItem("bhaag_total_cash") || localStorage.getItem("bhaag_best_coins") || "0",
+        10
+      );
+      setTotalCashDisplay("₹" + (savedCoins * 100).toLocaleString("en-IN"));
+    } catch {}
+  }, []);
+
+  const handleShareGame = async () => {
+    const shareUrl = typeof window !== "undefined" ? window.location.href : "https://bhaag-dipke.vercel.app/";
+    const shareData = {
+      title: "भाग Dipke भाग! 🏃💨 - Delhi Street Runner",
+      text: "🚨 Can you help Dipke dodge Delhi Police, DTC Buses, and Metro barricades across Delhi? Play now!",
+      url: shareUrl,
+    };
+
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err: any) {
+        if (err && err.name === "AbortError") return;
+      }
+    }
+
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(
+          `🚨 भाग Dipke भाग! - Delhi Street Runner\nCan you escape the Delhi Police? Play now: ${shareUrl}`
+        );
+        setShareToast("Link copied to clipboard! 📋 Share with friends!");
+        setTimeout(() => setShareToast(""), 3000);
+      }
+    } catch {
+      setShareToast("Share link: " + shareUrl);
+      setTimeout(() => setShareToast(""), 3500);
+    }
+  };
 
   useEffect(() => {
     const host = document.getElementById("game-canvas-container");
@@ -123,7 +166,14 @@ function Home() {
     <main className="game-root relative h-[100dvh] w-full overflow-hidden text-white">
 <div id="game-canvas-container" className="absolute inset-0"></div>
 
-  
+  {/* Floating Share Toast Notification */}
+  {shareToast && (
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] bg-emerald-950/95 border-2 border-emerald-400 text-emerald-200 px-4 py-2 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.6)] flex items-center gap-2 text-xs sm:text-sm font-bold animate-bounce pointer-events-none">
+      <span>✨</span>
+      <span>{shareToast}</span>
+    </div>
+  )}
+
   <div id="speed-fx" className="hud-layer speed-lines opacity-0 transition-opacity duration-300"></div>
   <div id="flight-fx" className="hud-layer sky-flight-fx opacity-0 transition-opacity duration-500"></div>
 
@@ -230,12 +280,12 @@ function Home() {
 
       {/* Top Pills Row (Mobile: flex row side-by-side across 375px; Desktop: Left & Right ends) */}
       <div className="w-full flex items-center justify-between gap-1.5 sm:gap-2">
-        {/* Left: Best Cash Pill */}
+        {/* Left: Total Cash Pill */}
         <div className="glass-card gold-glow-border px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-2xl flex items-center gap-1.5 sm:gap-2 shadow-xl flex-1 sm:flex-initial">
           <span className="text-xl sm:text-3xl filter drop-shadow">💵</span>
           <div>
-            <div className="text-[8px] sm:text-[10px] uppercase font-bold text-emerald-300/90 tracking-wider">Top Cash</div>
-            <div id="menu-best-coins" className="text-xs sm:text-2xl font-bungee text-emerald-300 leading-tight">₹0</div>
+            <div className="text-[8px] sm:text-[10px] uppercase font-bold text-emerald-300/90 tracking-wider">Total Cash</div>
+            <div id="menu-best-coins" className="text-xs sm:text-2xl font-bungee text-emerald-300 leading-tight">{totalCashDisplay}</div>
           </div>
         </div>
 
@@ -249,7 +299,7 @@ function Home() {
           </h1>
         </div>
 
-        {/* Right: High Score & Help Button */}
+        {/* Right: High Score, Share Game & Help Button */}
         <div className="flex items-center gap-1.5 sm:gap-2 flex-1 sm:flex-initial justify-end">
           <div className="glass-card gold-glow-border px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-2xl flex items-center gap-1.5 sm:gap-2 shadow-xl text-right">
             <div>
@@ -258,6 +308,17 @@ function Home() {
             </div>
             <span className="text-xl sm:text-3xl filter drop-shadow">🏆</span>
           </div>
+
+          {/* Quick Top Share Button */}
+          <button
+            type="button"
+            onClick={handleShareGame}
+            className="glass-card gold-glow-border w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center text-sm sm:text-xl font-black text-amber-300 hover:text-white hover:scale-105 active:scale-95 transition shadow-xl cursor-pointer shrink-0"
+            title="Share Game / गेम शेयर करें"
+            aria-label="Share Game"
+          >
+            📤
+          </button>
 
           {/* Quick Top Help Button */}
           <button
@@ -762,7 +823,7 @@ function Home() {
           id="btn-share-score"
           className="w-full py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-200 transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
         >
-          <span id="share-btn-text">📋 Copy &amp; Share Score</span>
+          <span id="share-btn-text">📤 Share Score</span>
         </button>
 
         <button

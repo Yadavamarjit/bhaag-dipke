@@ -2255,9 +2255,9 @@ import * as THREE from "three";
 
       bus.userData = {
         type: 'BUS',
-        width: 2.3,
+        width: 2.0,
         height: 2.7,
-        length: 7.5,
+        length: 6.8,
         canSlideUnder: false
       };
       return bus;
@@ -2879,13 +2879,28 @@ import * as THREE from "three";
 
       const shareBtn = document.getElementById('btn-share-score');
       if (shareBtn) {
-        shareBtn.addEventListener('click', (e) => {
+        shareBtn.addEventListener('click', async (e) => {
           e.stopPropagation();
           const dist = Math.floor(player.distance);
           const coins = player.coins;
           const score = player.score;
           const cashAmount = (coins * 100).toLocaleString('en-IN');
-          const text = `🚨 Detained in Bhaag Dipke Bhaag!\n🏃 Distance: ${dist}m\n💵 Cash: ₹${cashAmount}\n🏆 Score: ${score}\nCan you escape the Delhi Police? Play now: https://bhaag-dipke.vercel.app/`;
+          const shareUrl = window.location.origin || 'https://bhaag-dipke.vercel.app/';
+          const text = `🚨 Detained in Bhaag Dipke Bhaag!\n🏃 Distance: ${dist}m\n💵 Cash: ₹${cashAmount}\n🏆 Score: ${score}\nCan you escape the Delhi Police? Play now: ${shareUrl}`;
+
+          if (navigator.share) {
+            try {
+              await navigator.share({
+                title: 'Bhaag Dipke Bhaag! 🏃💨',
+                text: text,
+                url: shareUrl,
+              });
+              return;
+            } catch (err) {
+              if (err && (err as any).name === 'AbortError') return;
+            }
+          }
+
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text).then(() => {
               const label = document.getElementById('share-btn-text');
@@ -3733,24 +3748,48 @@ import * as THREE from "three";
 
         if (ud.canJumpOver) {
           if (player.y < ud.height) {
-            triggerPoliceTackle(ud.type);
+            triggerPoliceTackle(ud.type, obs);
             return;
           }
         } else {
-          triggerPoliceTackle(ud.type);
+          triggerPoliceTackle(ud.type, obs);
           return;
         }
       }
     }
 
-    function triggerPoliceTackle(crashSource) {
+    function triggerPoliceTackle(crashSource, obs) {
       if (currentGameState === STATE.CAUGHT || currentGameState === STATE.GAMEOVER) return;
 
       currentGameState = STATE.CAUGHT;
       pendingCrashReason = crashSource || 'BUS';
       caughtTimer = 0;
       crashImpactX = player.x;
-      crashImpactZ = player.z;
+
+      // Realistic obstacle impact alignment: prevent Dipke from embedding inside vehicle (especially DTC Bus)
+      if (obs && obs.userData) {
+        const halfL = (obs.userData.length || 2) / 2;
+        const obsFrontZ = obs.position.z + halfL;
+        const obsRearZ = obs.position.z - halfL;
+
+        // Front bumper collision (running forward into the front face):
+        if (player.prevZ >= obsFrontZ - 0.6) {
+          crashImpactZ = obsFrontZ + 0.45;
+        } else if (player.z <= obsFrontZ && player.z >= obsRearZ) {
+          // Side collision while changing lanes alongside the vehicle
+          crashImpactZ = player.z;
+          const halfW = (obs.userData.width || 2) / 2;
+          const sideOffset = halfW + 0.35;
+          crashImpactX = obs.position.x + (player.x >= obs.position.x ? sideOffset : -sideOffset);
+          player.x = crashImpactX;
+        } else {
+          crashImpactZ = Math.max(player.z, obsFrontZ + 0.45);
+        }
+        player.z = crashImpactZ;
+      } else {
+        crashImpactZ = player.z;
+      }
+
       crashPlayerY = player.y;
       player.isFlying = false;
       if (jetpackModel) jetpackModel.visible = false;
@@ -3920,22 +3959,33 @@ import * as THREE from "three";
     function saveHighScores() {
       try {
         const bestDist = Math.max(Math.floor(player.distance), parseInt(localStorage.getItem('bhaag_best_dist') || '0', 10));
-        const bestCoins = Math.max(player.coins, parseInt(localStorage.getItem('bhaag_best_coins') || '0', 10));
-
         localStorage.setItem('bhaag_best_dist', bestDist.toString());
+
+        // Accumulate complete lifetime cash earned across all runs
+        const currentRunCoins = player.coins || 0;
+        const prevTotalCoins = parseInt(localStorage.getItem('bhaag_total_cash') || localStorage.getItem('bhaag_best_coins') || '0', 10);
+        const newTotalCoins = prevTotalCoins + currentRunCoins;
+        localStorage.setItem('bhaag_total_cash', newTotalCoins.toString());
+
+        // Also track single-run best for records
+        const bestCoins = Math.max(currentRunCoins, parseInt(localStorage.getItem('bhaag_best_coins') || '0', 10));
         localStorage.setItem('bhaag_best_coins', bestCoins.toString());
 
-        document.getElementById('menu-best-dist').textContent = bestDist + ' m';
-        document.getElementById('menu-best-coins').textContent = '₹' + (bestCoins * 100).toLocaleString('en-IN');
+        const bestDistEl = document.getElementById('menu-best-dist');
+        if (bestDistEl) bestDistEl.textContent = bestDist + ' m';
+        const bestCoinsEl = document.getElementById('menu-best-coins');
+        if (bestCoinsEl) bestCoinsEl.textContent = '₹' + (newTotalCoins * 100).toLocaleString('en-IN');
       } catch (e) {}
     }
 
     function loadHighScores() {
       try {
         const bestDist = localStorage.getItem('bhaag_best_dist') || '0';
-        const bestCoins = parseInt(localStorage.getItem('bhaag_best_coins') || '0', 10);
-        document.getElementById('menu-best-dist').textContent = bestDist + ' m';
-        document.getElementById('menu-best-coins').textContent = '₹' + (bestCoins * 100).toLocaleString('en-IN');
+        const totalCoins = parseInt(localStorage.getItem('bhaag_total_cash') || localStorage.getItem('bhaag_best_coins') || '0', 10);
+        const bestDistEl = document.getElementById('menu-best-dist');
+        if (bestDistEl) bestDistEl.textContent = bestDist + ' m';
+        const bestCoinsEl = document.getElementById('menu-best-coins');
+        if (bestCoinsEl) bestCoinsEl.textContent = '₹' + (totalCoins * 100).toLocaleString('en-IN');
       } catch (e) {}
     }
 
