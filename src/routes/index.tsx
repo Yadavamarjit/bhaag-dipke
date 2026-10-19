@@ -210,36 +210,28 @@ function Home() {
         <span id="btn-start-icon" className="text-xl sm:text-3xl animate-bounce">🔥</span>
       </button>
 
-      {/* Secondary Quick Action Bar: Wear Photo & Audio Toggle */}
-      <div className="flex items-center justify-center gap-2 sm:gap-2.5 w-full">
-        <label className="cursor-pointer flex-1 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border border-amber-400/40 bg-black/60 hover:bg-black/80 px-2 sm:px-3 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold text-amber-200 transition shadow-md active:scale-95 truncate">
-          <span className="shrink-0">📸</span> <span className="truncate">Wear Photo</span>
-          <input id="photo-input" type="file" accept="image/*" className="sr-only" />
-        </label>
+      {/* Quick Action Bar: Audio Toggle, How to Play & Credits */}
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 w-full">
         <button
           type="button"
           id="btn-audio-toggle"
-          className="flex items-center justify-center gap-1.5 px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-amber-400/40 bg-black/60 hover:bg-black/80 text-[11px] sm:text-xs font-bold text-amber-200 transition shadow-md active:scale-95 cursor-pointer shrink-0"
+          className="flex items-center justify-center gap-1 py-2 px-1.5 sm:px-2 rounded-xl border border-amber-400/40 bg-black/70 hover:bg-black/90 text-[10px] sm:text-xs font-bold text-amber-200 transition shadow-md active:scale-95 cursor-pointer truncate"
         >
-          <span id="audio-toggle-icon">🔊</span> Sound ON
+          <span id="audio-toggle-icon">🔊</span> <span className="truncate">Sound ON</span>
         </button>
-      </div>
-
-      {/* Third Action Bar: How to Play (?) & Credits & Dev */}
-      <div className="flex items-center justify-center gap-2 w-full">
         <button
           type="button"
           onClick={() => setShowHelp(true)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl border border-yellow-400/40 bg-black/70 hover:bg-black/90 text-[11px] sm:text-xs font-bold text-yellow-300 transition shadow-md active:scale-95 cursor-pointer"
+          className="flex items-center justify-center gap-1 py-2 px-1.5 sm:px-2 rounded-xl border border-yellow-400/40 bg-black/70 hover:bg-black/90 text-[10px] sm:text-xs font-bold text-yellow-300 transition shadow-md active:scale-95 cursor-pointer truncate"
         >
-          <span className="text-xs sm:text-sm">❓</span> How to Play
+          <span className="text-xs sm:text-sm shrink-0">❓</span> <span className="truncate">How to Play</span>
         </button>
         <button
           type="button"
           onClick={() => setShowCredits(true)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl border border-amber-400/40 bg-black/70 hover:bg-black/90 text-[11px] sm:text-xs font-bold text-amber-200 transition shadow-md active:scale-95 cursor-pointer"
+          className="flex items-center justify-center gap-1 py-2 px-1.5 sm:px-2 rounded-xl border border-amber-400/40 bg-black/70 hover:bg-black/90 text-[10px] sm:text-xs font-bold text-amber-200 transition shadow-md active:scale-95 cursor-pointer truncate"
         >
-          <span className="text-xs sm:text-sm">❤️</span> Credits &amp; Dev
+          <span className="text-xs sm:text-sm shrink-0">❤️</span> <span className="truncate">Credits</span>
         </button>
       </div>
 
