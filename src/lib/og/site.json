@@ -1,5 +1,7 @@
 {
   "title": "Bhaag Dipke Bhaag",
+  "description": "Help Dipke sprint away from Delhi Police across Connaught Place, India Gate and Delhi Metro!",
   "type": "x:game",
-  "card": "custom"
+  "card": "custom",
+  "image": "/og.jpg"
 }
