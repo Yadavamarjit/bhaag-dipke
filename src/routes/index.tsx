@@ -53,47 +53,61 @@ function Home() {
   </div>
 
 
-  <div id="hud" className="hud-layer flex flex-col justify-between p-3 sm:p-5 hidden">
-    <div className="flex items-start justify-between w-full max-w-5xl mx-auto">
-      <div className="flex flex-col gap-1.5">
-        <div className="glass-card px-3.5 py-1.5 rounded-2xl flex items-center gap-2 shadow-lg border-emerald-500/40">
-          <span className="text-2xl drop-shadow">💵</span>
-          <div>
-            <div className="text-[10px] uppercase tracking-wider text-emerald-300 font-bold">Cash Stash</div>
-            <div id="hud-coins" className="text-xl sm:text-2xl font-bungee text-emerald-300 leading-tight">₹0</div>
-          </div>
+  <div id="hud" className="hud-layer flex flex-col justify-between p-2.5 sm:p-5 hidden">
+    <div className="flex items-start justify-between w-full max-w-5xl mx-auto gap-2">
+      {/* Top Left: Minimalist Cash & Distance (No card background, no label text, just emoji + value) */}
+      <div className="flex flex-col gap-1 sm:gap-1.5 drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
+        {/* Cash: Just 💵 and ₹<value> */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <span className="text-2xl sm:text-3xl filter drop-shadow">💵</span>
+          <span id="hud-coins" className="text-xl sm:text-2xl font-bungee text-emerald-300 leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">
+            ₹0
+          </span>
         </div>
 
-        <div className="glass-card px-3.5 py-1.5 rounded-2xl flex items-center gap-2 shadow-lg border-orange-500/40">
-          <span className="text-2xl drop-shadow">🏃‍♂️</span>
-          <div>
-            <div className="text-[10px] uppercase tracking-wider text-orange-200 font-bold">Distance</div>
-            <div className="flex items-baseline gap-1">
-              <span id="hud-distance" className="text-xl sm:text-2xl font-bungee text-white leading-tight">0</span>
-              <span className="text-xs text-orange-300 font-bold">m</span>
-            </div>
+        {/* Distance: Just 🏃‍♂️ and <value>m */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <span className="text-2xl sm:text-3xl filter drop-shadow">🏃‍♂️</span>
+          <div className="flex items-baseline gap-0.5 leading-none">
+            <span id="hud-distance" className="text-xl sm:text-2xl font-bungee text-white leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">
+              0
+            </span>
+            <span className="text-xs sm:text-sm font-bungee text-orange-300">m</span>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col items-end gap-2">
-        <div className="glass-card px-4 py-1.5 rounded-2xl text-right border-amber-500/30">
-          <div className="text-[10px] uppercase tracking-wider text-yellow-400 font-bold">Delhi Location</div>
-          <div id="hud-landmark" className="text-xs sm:text-sm font-hindi-style text-amber-100 font-bold">Connaught Place Radial</div>
-        </div>
+      <div className="flex flex-col items-end gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Pause Button */}
+          <button
+            type="button"
+            id="btn-pause-game"
+            className="glass-card gold-glow-border w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-sm sm:text-base font-bold text-yellow-300 hover:text-white hover:scale-105 active:scale-95 transition shadow-xl cursor-pointer"
+            title="Pause Game (P / Esc)"
+            aria-label="Pause Game"
+          >
+            ⏸️
+          </button>
 
-        <div className="glass-card px-3 py-1 rounded-xl flex items-center gap-2 border-red-500/40">
-          <span className="text-sm">👮‍♂️</span>
-          <div className="text-[11px] font-bold text-red-300">
-            Police Gap: <span id="police-dist" className="text-yellow-300 font-mono">14m</span>
+          <div className="glass-card px-2.5 py-1 sm:px-4 sm:py-1.5 rounded-xl sm:rounded-2xl text-right border-amber-500/30">
+            <div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-yellow-400 font-bold">Delhi Location</div>
+            <div id="hud-landmark" className="text-[11px] sm:text-sm font-hindi-style text-amber-100 font-bold max-w-[140px] sm:max-w-none truncate">Connaught Place Radial</div>
           </div>
         </div>
 
-        <div id="hud-powerup" className="glass-card px-3 py-1.5 rounded-xl hidden flex items-center gap-2 border-emerald-400/50 bg-emerald-950/80">
-          <span id="powerup-icon" className="text-xl animate-bounce">⚡</span>
+        <div className="glass-card px-2 py-0.5 sm:px-3 sm:py-1 rounded-lg sm:rounded-xl flex items-center gap-1.5 sm:gap-2 border-red-500/40">
+          <span className="text-xs sm:text-sm">👮‍♂️</span>
+          <div className="text-[10px] sm:text-[11px] font-bold text-red-300">
+            Police: <span id="police-dist" className="text-yellow-300 font-mono">14m</span>
+          </div>
+        </div>
+
+        <div id="hud-powerup" className="glass-card px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl hidden flex items-center gap-1.5 sm:gap-2 border-emerald-400/50 bg-emerald-950/80">
+          <span id="powerup-icon" className="text-lg sm:text-xl animate-bounce">⚡</span>
           <div>
-            <div id="powerup-name" className="text-[10px] font-bold text-emerald-300 uppercase">Metro Boost</div>
-            <div className="w-24 sm:w-32 bg-black/50 h-2 rounded-full overflow-hidden border border-emerald-400/30">
+            <div id="powerup-name" className="text-[9px] sm:text-[10px] font-bold text-emerald-300 uppercase">Metro Boost</div>
+            <div className="w-20 sm:w-32 bg-black/50 h-1.5 sm:h-2 rounded-full overflow-hidden border border-emerald-400/30">
               <div id="powerup-bar" className="bg-gradient-to-r from-emerald-400 to-yellow-300 h-full w-full"></div>
             </div>
           </div>
@@ -108,46 +122,59 @@ function Home() {
       ========================================================================= */}
   <div id="menu-modal" className="hud-layer flex flex-col justify-between p-3.5 sm:p-6 select-none">
     {/* Top Header Deck */}
-    <div className="w-full max-w-5xl mx-auto flex items-start sm:items-center justify-between interactive gap-2 pt-1">
-      {/* Left: Best Cash Pill */}
-      <div className="glass-card gold-glow-border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-2xl flex items-center gap-2 shadow-xl">
-        <span className="text-2xl sm:text-3xl filter drop-shadow">💵</span>
-        <div>
-          <div className="text-[9px] sm:text-[10px] uppercase font-bold text-emerald-300/90 tracking-wider">Top Cash</div>
-          <div id="menu-best-coins" className="text-base sm:text-2xl font-bungee text-emerald-300 leading-tight">₹0</div>
-        </div>
-      </div>
-
-      {/* Center: 3D Embossed Title Logo */}
-      <div className="text-center px-1">
-        <div className="inline-block bg-gradient-to-r from-red-600 via-amber-500 to-yellow-400 text-black font-bungee text-[9px] sm:text-[11px] font-black px-3 py-0.5 rounded-full uppercase tracking-widest shadow-md mb-0.5">
+    <div className="w-full max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between interactive gap-1.5 sm:gap-2 pt-1">
+      {/* Mobile Title (visible on mobile < sm, placed cleanly on top without line wrapping) */}
+      <div className="text-center px-1 sm:hidden">
+        <div className="inline-block bg-gradient-to-r from-red-600 via-amber-500 to-yellow-400 text-black font-bungee text-[8px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest shadow-md mb-0.5">
           DELHI STREET RUNNER
         </div>
-        <h1 className="text-2xl sm:text-5xl font-hindi-style text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500 font-black tracking-wide drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)]">
+        <h1 className="text-2xl font-hindi-style text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500 font-black tracking-wide drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)] whitespace-nowrap">
           भाग Dipke भाग!
         </h1>
       </div>
 
-      {/* Right: High Score & Help Button */}
-      <div className="flex items-center gap-1.5 sm:gap-2">
-        <div className="glass-card gold-glow-border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-2xl flex items-center gap-2 shadow-xl text-right">
+      {/* Top Pills Row (Mobile: flex row side-by-side across 375px; Desktop: Left & Right ends) */}
+      <div className="w-full flex items-center justify-between gap-1.5 sm:gap-2">
+        {/* Left: Best Cash Pill */}
+        <div className="glass-card gold-glow-border px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-2xl flex items-center gap-1.5 sm:gap-2 shadow-xl flex-1 sm:flex-initial">
+          <span className="text-xl sm:text-3xl filter drop-shadow">💵</span>
           <div>
-            <div className="text-[9px] sm:text-[10px] uppercase font-bold text-amber-300/80 tracking-wider">Top Distance</div>
-            <div id="menu-best-dist" className="text-base sm:text-2xl font-bungee text-amber-400 leading-tight">0 m</div>
+            <div className="text-[8px] sm:text-[10px] uppercase font-bold text-emerald-300/90 tracking-wider">Top Cash</div>
+            <div id="menu-best-coins" className="text-xs sm:text-2xl font-bungee text-emerald-300 leading-tight">₹0</div>
           </div>
-          <span className="text-2xl sm:text-3xl filter drop-shadow">🏆</span>
         </div>
 
-        {/* Quick Top Help Button */}
-        <button
-          type="button"
-          onClick={() => setShowHelp(true)}
-          className="glass-card gold-glow-border w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center text-lg sm:text-xl font-black text-yellow-300 hover:text-white hover:scale-105 active:scale-95 transition shadow-xl cursor-pointer"
-          title="How to Play / कैसे खेलें"
-          aria-label="How to play"
-        >
-          ❓
-        </button>
+        {/* Desktop Center: Title (hidden on mobile, visible on desktop) */}
+        <div className="hidden sm:block text-center px-1">
+          <div className="inline-block bg-gradient-to-r from-red-600 via-amber-500 to-yellow-400 text-black font-bungee text-[11px] font-black px-3 py-0.5 rounded-full uppercase tracking-widest shadow-md mb-0.5">
+            DELHI STREET RUNNER
+          </div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-hindi-style text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500 font-black tracking-wide drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)] whitespace-nowrap">
+            भाग Dipke भाग!
+          </h1>
+        </div>
+
+        {/* Right: High Score & Help Button */}
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-1 sm:flex-initial justify-end">
+          <div className="glass-card gold-glow-border px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-2xl flex items-center gap-1.5 sm:gap-2 shadow-xl text-right">
+            <div>
+              <div className="text-[8px] sm:text-[10px] uppercase font-bold text-amber-300/80 tracking-wider">Top Distance</div>
+              <div id="menu-best-dist" className="text-xs sm:text-2xl font-bungee text-amber-400 leading-tight">0 m</div>
+            </div>
+            <span className="text-xl sm:text-3xl filter drop-shadow">🏆</span>
+          </div>
+
+          {/* Quick Top Help Button */}
+          <button
+            type="button"
+            onClick={() => setShowHelp(true)}
+            className="glass-card gold-glow-border w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center text-sm sm:text-xl font-black text-yellow-300 hover:text-white hover:scale-105 active:scale-95 transition shadow-xl cursor-pointer shrink-0"
+            title="How to Play / कैसे खेलें"
+            aria-label="How to play"
+          >
+            ❓
+          </button>
+        </div>
       </div>
     </div>
 
@@ -155,19 +182,19 @@ function Home() {
     <div className="flex-1 pointer-events-none"></div>
 
     {/* Bottom Control Deck */}
-    <div className="w-full max-w-md mx-auto flex flex-col items-center gap-2.5 interactive pb-3 sm:pb-6">
+    <div className="w-full max-w-md mx-auto flex flex-col items-center gap-1.5 sm:gap-2.5 interactive pb-2 sm:pb-6">
       {/* Boot Loading Panel (shows while textures load) */}
-      <div id="boot-panel" className="w-full glass-card p-2.5 rounded-2xl border-amber-500/30 text-left">
-        <div className="mb-1 flex items-center justify-between text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-amber-200">
+      <div id="boot-panel" className="w-full glass-card p-2 sm:p-2.5 rounded-xl sm:rounded-2xl border-amber-500/30 text-left">
+        <div className="mb-0.5 flex items-center justify-between text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-amber-200">
           <span id="boot-label" className="flex items-center gap-1.5">
             <span className="boot-runner">🏃</span> Loading Delhi
           </span>
           <span id="boot-pct" className="font-mono text-yellow-300">0%</span>
         </div>
-        <div className="h-2 w-full overflow-hidden rounded-full border border-amber-400/30 bg-black/60">
+        <div className="h-1.5 sm:h-2 w-full overflow-hidden rounded-full border border-amber-400/30 bg-black/60">
           <div id="boot-bar" className="boot-bar h-full w-0 rounded-full"></div>
         </div>
-        <p id="boot-hint" className="mt-1 text-center text-[10px] font-semibold text-amber-100/70">
+        <p id="boot-hint" className="mt-0.5 text-center text-[9px] sm:text-[10px] font-semibold text-amber-100/70">
           Dipke is warming up. Tap start — the chase begins as soon as Delhi is loaded.
         </p>
       </div>
@@ -177,22 +204,22 @@ function Home() {
         type="button"
         id="btn-start"
         onClick={queueStart}
-        className="arcade-btn w-full py-4 sm:py-5 rounded-2xl bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 hover:brightness-110 text-black font-bungee text-xl sm:text-2xl tracking-wider uppercase font-black flex items-center justify-center gap-3 border-2 border-yellow-200 cursor-pointer shadow-2xl"
+        className="arcade-btn w-full py-3 sm:py-5 rounded-2xl bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 hover:brightness-110 text-black font-bungee text-lg sm:text-2xl tracking-wider uppercase font-black flex items-center justify-center gap-2 sm:gap-3 border-2 border-yellow-200 cursor-pointer shadow-2xl active:scale-98"
       >
         <span id="btn-start-label">BHAAG DIPKE! [START]</span>
-        <span id="btn-start-icon" className="text-2xl sm:text-3xl animate-bounce">🔥</span>
+        <span id="btn-start-icon" className="text-xl sm:text-3xl animate-bounce">🔥</span>
       </button>
 
       {/* Secondary Quick Action Bar: Wear Photo & Audio Toggle */}
-      <div className="flex items-center justify-center gap-2.5 w-full">
-        <label className="cursor-pointer flex-1 flex items-center justify-center gap-2 rounded-xl border border-amber-400/40 bg-black/60 hover:bg-black/80 px-3 py-2.5 text-xs font-bold text-amber-200 transition shadow-md active:scale-95">
-          <span>📸</span> Wear Your Photo as Dipke
+      <div className="flex items-center justify-center gap-2 sm:gap-2.5 w-full">
+        <label className="cursor-pointer flex-1 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border border-amber-400/40 bg-black/60 hover:bg-black/80 px-2 sm:px-3 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold text-amber-200 transition shadow-md active:scale-95 truncate">
+          <span className="shrink-0">📸</span> <span className="truncate">Wear Photo</span>
           <input id="photo-input" type="file" accept="image/*" className="sr-only" />
         </label>
         <button
           type="button"
           id="btn-audio-toggle"
-          className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-amber-400/40 bg-black/60 hover:bg-black/80 text-xs font-bold text-amber-200 transition shadow-md active:scale-95 cursor-pointer"
+          className="flex items-center justify-center gap-1.5 px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl border border-amber-400/40 bg-black/60 hover:bg-black/80 text-[11px] sm:text-xs font-bold text-amber-200 transition shadow-md active:scale-95 cursor-pointer shrink-0"
         >
           <span id="audio-toggle-icon">🔊</span> Sound ON
         </button>
@@ -203,21 +230,21 @@ function Home() {
         <button
           type="button"
           onClick={() => setShowHelp(true)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-yellow-400/40 bg-black/70 hover:bg-black/90 text-xs font-bold text-yellow-300 transition shadow-md active:scale-95 cursor-pointer"
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl border border-yellow-400/40 bg-black/70 hover:bg-black/90 text-[11px] sm:text-xs font-bold text-yellow-300 transition shadow-md active:scale-95 cursor-pointer"
         >
-          <span className="text-sm">❓</span> How to Play
+          <span className="text-xs sm:text-sm">❓</span> How to Play
         </button>
         <button
           type="button"
           onClick={() => setShowCredits(true)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-amber-400/40 bg-black/70 hover:bg-black/90 text-xs font-bold text-amber-200 transition shadow-md active:scale-95 cursor-pointer"
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl border border-amber-400/40 bg-black/70 hover:bg-black/90 text-[11px] sm:text-xs font-bold text-amber-200 transition shadow-md active:scale-95 cursor-pointer"
         >
-          <span className="text-sm">❤️</span> Credits &amp; Dev
+          <span className="text-xs sm:text-sm">❤️</span> Credits &amp; Dev
         </button>
       </div>
 
       {/* Subtle Entertainment Disclaimer Footer */}
-      <div className="text-center text-[10px] text-amber-100/60 font-semibold tracking-wide pt-0.5">
+      <div className="text-center text-[9px] sm:text-[10px] text-amber-100/60 font-semibold tracking-wide pt-0.5 px-1">
         Pure Chill &amp; Entertainment • Dev:{" "}
         <a
           href="https://ydvamar.online"
@@ -434,53 +461,92 @@ function Home() {
   )}
 
   {/* =========================================================================
-      GAME OVER: DELHI POLICE DIGITAL E-CHALLAN FIR SLIP
+      PAUSE MODAL OVERLAY
       ========================================================================= */}
-  <div id="gameover-modal" className="hud-layer flex items-center justify-center p-4 hidden">
-    <div className="glass-card challan-neon-card interactive max-w-md w-full rounded-3xl p-6 sm:p-7 text-center relative overflow-hidden">
-      {/* Flashing Police Siren Bar */}
-      <div className="flex items-center justify-between mb-3 px-1">
-        <div className="inline-flex items-center gap-1.5 bg-red-600/90 text-white font-bungee px-3 py-1 rounded-full text-[10px] sm:text-[11px] uppercase tracking-wider shadow">
-          <span>🚨</span> DELHI TRAFFIC POLICE
+  <div id="pause-modal" className="hud-layer flex items-center justify-center p-4 bg-black/75 backdrop-blur-md hidden z-50 select-none">
+    <div className="glass-card gold-glow-border max-w-sm w-full rounded-3xl p-6 sm:p-7 text-center relative shadow-2xl">
+      <div className="inline-block bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bungee text-[10px] font-black px-3 py-0.5 rounded-full uppercase tracking-widest shadow mb-2">
+        GAME PAUSED
+      </div>
+      <h2 className="text-2xl sm:text-3xl font-hindi-style text-yellow-300 font-extrabold mb-1">
+        खेल रुका है!
+      </h2>
+      <p className="text-xs text-amber-100/70 mb-5 font-semibold">
+        Dipke and Delhi Police are catching their breath.
+      </p>
+
+      {/* Mini Stats During Pause */}
+      <div className="grid grid-cols-2 gap-2.5 mb-5">
+        <div className="digital-meter rounded-2xl p-2.5 border border-emerald-500/30 text-center">
+          <span className="text-xl">💵</span>
+          <div id="pause-cash" className="text-lg font-bungee text-emerald-300 mt-0.5">₹0</div>
         </div>
-        <div className="text-[10px] font-mono uppercase px-2.5 py-1 rounded-full bg-blue-600/80 text-blue-100 font-bold border border-blue-400/40">
-          E-CHALLAN #DL-CP-420
+        <div className="digital-meter rounded-2xl p-2.5 border border-orange-500/30 text-center">
+          <span className="text-xl">🏃‍♂️</span>
+          <div id="pause-dist" className="text-lg font-bungee text-white mt-0.5">0 m</div>
         </div>
       </div>
 
-      {/* Quip Title */}
-      <h2 id="go-hindi-quip" className="text-2xl sm:text-3xl font-hindi-style text-yellow-300 font-extrabold mb-1 drop-shadow">
-        अरे Dipke भाई! चालान कट गया!
+      <div className="flex flex-col gap-2.5">
+        {/* Resume Button */}
+        <button
+          type="button"
+          id="btn-resume-game"
+          className="arcade-btn w-full py-3.5 rounded-2xl bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 hover:brightness-110 text-black font-bungee text-base font-black tracking-wider shadow-xl cursor-pointer active:scale-95 flex items-center justify-center gap-2"
+        >
+          <span>▶️</span> RESUME CHASE
+        </button>
+
+        {/* Restart Button */}
+        <button
+          type="button"
+          id="btn-pause-restart"
+          className="w-full py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-200 transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+        >
+          <span>🔄</span> Restart Run
+        </button>
+
+        {/* Sound Toggle Button */}
+        <button
+          type="button"
+          id="btn-pause-audio"
+          className="w-full py-2 rounded-xl border border-amber-400/30 bg-black/50 hover:bg-black/70 text-xs font-bold text-amber-200 transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+        >
+          <span id="pause-audio-icon">🔊</span> Toggle Sound
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {/* =========================================================================
+      GAME OVER: DETAINED MODAL
+      ========================================================================= */}
+  <div id="gameover-modal" className="hud-layer flex items-center justify-center p-4 hidden z-50 select-none">
+    <div className="glass-card challan-neon-card interactive max-w-sm w-full rounded-2xl sm:rounded-3xl p-5 sm:p-7 text-center relative overflow-hidden shadow-2xl">
+      {/* Detained Title Badge */}
+      <div className="inline-block bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white font-bungee text-xs sm:text-sm font-black px-5 py-1 rounded-full uppercase tracking-widest shadow-lg border border-red-400/40 mb-3">
+        DETAINED
+      </div>
+
+      {/* Main Quip */}
+      <h2 className="text-2xl sm:text-3xl font-hindi-style text-yellow-300 font-extrabold mb-4 drop-shadow">
+        Dipke, it&apos;s done bro!
       </h2>
-      <p id="go-reason" className="text-xs text-red-200 mb-4 font-semibold px-2">
-        Reason: Delhi Police caught up with you near Connaught Place!
-      </p>
 
       {/* New High Score Toast Badge */}
       <div id="go-new-record" className="hidden mb-3 py-1.5 px-3 bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500 text-black font-bungee text-xs rounded-full uppercase tracking-wider font-black shadow-lg animate-pulse">
         🏆 NEW RECORD DISTANCE SET! 🏆
       </div>
 
-      {/* Digital LED Arcade Meters */}
-      <div className="grid grid-cols-2 gap-2.5 mb-3 text-left">
-        <div className="digital-meter rounded-2xl p-3 border border-amber-500/30">
-          <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Distance Run</div>
-          <div id="go-dist" className="font-bungee text-xl sm:text-2xl text-white mt-0.5">0 m</div>
+      {/* Digital LED Arcade Meters with Emojis */}
+      <div className="grid grid-cols-2 gap-2.5 mb-5 text-center">
+        <div className="digital-meter rounded-2xl p-3 border border-orange-500/30 flex flex-col items-center">
+          <span className="text-2xl mb-1 filter drop-shadow">🏃‍♂️</span>
+          <div id="go-dist" className="font-bungee text-xl sm:text-2xl text-white leading-tight">0 m</div>
         </div>
-        <div className="digital-meter rounded-2xl p-3 border border-emerald-500/30">
-          <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Cash Recovered (नकदी)</div>
-          <div id="go-coins" className="font-bungee text-xl sm:text-2xl text-emerald-300 mt-0.5">₹0</div>
-        </div>
-      </div>
-
-      <div className="digital-meter rounded-2xl p-3 mb-5 border border-emerald-500/40 flex items-center justify-between">
-        <div className="text-left">
-          <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Fine / Total Score</div>
-          <div id="go-score" className="font-bungee text-2xl sm:text-3xl text-emerald-400 leading-tight">0</div>
-        </div>
-        <div className="text-right">
-          <div className="text-[9px] uppercase text-gray-400 font-bold">Challan Status</div>
-          <div className="text-xs font-bold text-red-400 uppercase tracking-wide">Pending at Thana</div>
+        <div className="digital-meter rounded-2xl p-3 border border-emerald-500/30 flex flex-col items-center">
+          <span className="text-2xl mb-1 filter drop-shadow">💵</span>
+          <div id="go-coins" className="font-bungee text-xl sm:text-2xl text-emerald-300 leading-tight">₹0</div>
         </div>
       </div>
 
@@ -489,9 +555,9 @@ function Home() {
         <button
           type="button"
           id="btn-restart"
-          className="arcade-btn-red w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 hover:brightness-110 text-white font-bungee text-lg font-black tracking-wider shadow-xl cursor-pointer"
+          className="arcade-btn-red w-full py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 hover:brightness-110 text-white font-bungee text-base sm:text-lg font-black tracking-wider shadow-xl cursor-pointer active:scale-95"
         >
-          BAIL OUT / RETRY CHASE 🔄
+          BAIL OUT / RETRY CHASE
         </button>
 
         <button
@@ -499,7 +565,7 @@ function Home() {
           id="btn-share-score"
           className="w-full py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-200 transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
         >
-          <span id="share-btn-text">📋 Copy &amp; Share Challan</span>
+          <span id="share-btn-text">📋 Copy &amp; Share Score</span>
         </button>
       </div>
     </div>

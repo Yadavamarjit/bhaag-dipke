@@ -623,7 +623,8 @@ import * as THREE from "three";
       PLAYING: 2,
       CAUGHT: 3,     // Dramatic tackle and biting sequence
       GAMEOVER: 4,
-      COUNTDOWN: 5
+      COUNTDOWN: 5,
+      PAUSED: 6
     };
     let currentGameState = STATE.MENU;
     let countdownTimer = 0;
@@ -2722,8 +2723,44 @@ import * as THREE from "three";
       collectibles.push(p);
     }
 
+    function pauseGame() {
+      if (currentGameState !== STATE.PLAYING) return;
+      currentGameState = STATE.PAUSED;
+      const pauseModal = document.getElementById('pause-modal');
+      if (pauseModal) {
+        const pauseCash = document.getElementById('pause-cash');
+        if (pauseCash) pauseCash.textContent = '₹' + (player.coins * 100).toLocaleString('en-IN');
+        const pauseDist = document.getElementById('pause-dist');
+        if (pauseDist) pauseDist.textContent = Math.floor(player.distance) + ' m';
+        pauseModal.classList.remove('hidden');
+      }
+    }
+
+    function resumeGame() {
+      if (currentGameState !== STATE.PAUSED) return;
+      currentGameState = STATE.PLAYING;
+      const pauseModal = document.getElementById('pause-modal');
+      if (pauseModal) pauseModal.classList.add('hidden');
+      lastTime = performance.now();
+    }
+
+    function togglePause() {
+      if (currentGameState === STATE.PLAYING) pauseGame();
+      else if (currentGameState === STATE.PAUSED) resumeGame();
+    }
+
     function setupControls() {
       const onKeyDown = (e) => {
+        if (e.code === 'KeyP' || e.code === 'Escape') {
+          e.preventDefault();
+          togglePause();
+          return;
+        }
+        if (currentGameState === STATE.PAUSED && e.code === 'Space') {
+          e.preventDefault();
+          resumeGame();
+          return;
+        }
         if (e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === 'Space') {
           e.preventDefault();
         }
@@ -2801,6 +2838,20 @@ import * as THREE from "three";
 
       bindClick('btn-start', startCutsceneIntro);
       bindClick('btn-restart', startCutsceneIntro);
+      bindClick('btn-pause-game', pauseGame);
+      bindClick('btn-resume-game', resumeGame);
+      bindClick('btn-pause-restart', () => {
+        const pauseModal = document.getElementById('pause-modal');
+        if (pauseModal) pauseModal.classList.add('hidden');
+        startCutsceneIntro();
+      });
+      bindClick('btn-pause-audio', () => {
+        audio.isMuted = !audio.isMuted;
+        const icon = document.getElementById('pause-audio-icon');
+        if (icon) icon.textContent = audio.isMuted ? '🔇' : '🔊';
+        const mainIcon = document.getElementById('audio-toggle-icon');
+        if (mainIcon) mainIcon.textContent = audio.isMuted ? '🔇' : '🔊';
+      });
 
       const audioBtn = document.getElementById('btn-audio-toggle');
       if (audioBtn) {
@@ -2823,7 +2874,7 @@ import * as THREE from "three";
           const coins = player.coins;
           const score = player.score;
           const cashAmount = (coins * 100).toLocaleString('en-IN');
-          const text = `🚨 Delhi Police caught me in Bhaag Dipke Bhaag!\n🏃 Distance: ${dist}m\n💵 Cash Stash: ₹${cashAmount} (${coins} Bundles)\n🏆 Score: ${score}\nCan you escape the Delhi Police? Play now: https://bhaag-dipke.vercel.app/`;
+          const text = `🚨 Detained in Bhaag Dipke Bhaag!\n🏃 Distance: ${dist}m\n💵 Cash: ₹${cashAmount}\n🏆 Score: ${score}\nCan you escape the Delhi Police? Play now: https://bhaag-dipke.vercel.app/`;
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text).then(() => {
               const label = document.getElementById('share-btn-text');
@@ -3040,6 +3091,7 @@ import * as THREE from "three";
 
       document.getElementById('menu-modal').classList.add('hidden');
       document.getElementById('gameover-modal').classList.add('hidden');
+      document.getElementById('pause-modal')?.classList.add('hidden');
       document.getElementById('countdown-overlay')?.classList.add('hidden');
       document.getElementById('hud').classList.add('hidden');
       audio.playMetroRumble();
@@ -3061,6 +3113,8 @@ import * as THREE from "three";
 
       if (currentGameState === STATE.CUTSCENE) {
         updateCutscene(frameDt);
+      } else if (currentGameState === STATE.PAUSED) {
+        // Paused: frame is rendered frozen in place, physics and time do not advance
       } else if (currentGameState === STATE.PLAYING) {
         physAcc += frameDt;
         let steps = 0;
@@ -3773,16 +3827,11 @@ import * as THREE from "three";
       const isNewRecord = Math.floor(player.distance) > prevBestDist && player.distance > 50;
 
       player.score = Math.floor(player.distance + player.coins * 10);
-      const quip = HINDI_QUIPS[Math.floor(Math.random() * HINDI_QUIPS.length)];
-      const hindiQuipEl = document.getElementById('go-hindi-quip');
-      if (hindiQuipEl) hindiQuipEl.textContent = quip.text;
-      const reasonEl = document.getElementById('go-reason');
-      if (reasonEl) reasonEl.textContent = quip.desc;
 
       const goDistEl = document.getElementById('go-dist');
       if (goDistEl) goDistEl.textContent = Math.floor(player.distance) + ' m';
       const goCoinsEl = document.getElementById('go-coins');
-      if (goCoinsEl) goCoinsEl.textContent = '₹' + (player.coins * 100).toLocaleString('en-IN') + ' (' + player.coins + ' 💵)';
+      if (goCoinsEl) goCoinsEl.textContent = '₹' + (player.coins * 100).toLocaleString('en-IN');
       const goScoreEl = document.getElementById('go-score');
       if (goScoreEl) goScoreEl.textContent = player.score.toString();
 
@@ -3796,6 +3845,8 @@ import * as THREE from "three";
 
       const hud = document.getElementById('hud');
       if (hud) hud.classList.add('hidden');
+      const pauseModal = document.getElementById('pause-modal');
+      if (pauseModal) pauseModal.classList.add('hidden');
       const goModal = document.getElementById('gameover-modal');
       if (goModal) goModal.classList.remove('hidden');
     }
