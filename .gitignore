@@ -48,3 +48,6 @@ attachments/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Local Only Admin Analytics Dashboard (NEVER push to GitHub)
+admin/
