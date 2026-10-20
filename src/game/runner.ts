@@ -2687,9 +2687,9 @@ import * as THREE from "three";
       const obstacleTypes = ['BUS', 'AUTO', 'BARRICADE'];
       const canSpawnObstacles = (player.distance >= 40);
 
-      // Guaranteed early Flying Jetpack at ~80m (exactly one early introduction)
+      // Guaranteed early Flying Jetpack at ~130m (exactly one early introduction)
       const approxDistAtZ = Math.abs(zPos) * 0.25;
-      if (!hasSpawnedEarlyJetpack && approxDistAtZ >= 80) {
+      if (!hasSpawnedEarlyJetpack && approxDistAtZ >= 130) {
         hasSpawnedEarlyJetpack = true;
         const p = createPowerupMesh('FLYING_JETPACK');
         p.position.set(LANES[freeLane], 1.25, zPos);
