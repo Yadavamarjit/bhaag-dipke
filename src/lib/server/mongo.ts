@@ -7,12 +7,13 @@ try {
 } catch {}
 
 // Set MONGODB_URI in your .env.local (dev) or Vercel environment variables (prod)
+// Cached singleton client for serverless environments (prevents socket exhaustion)
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
   throw new Error(
-    "[mongo] MONGODB_URI environment variable is not set. " +
-      "Add it to .env.local for local dev or Vercel project settings for prod."
+    "[mongo] MONGODB_URI environment variable is not configured. " +
+      "Please set MONGODB_URI in Vercel project settings (Production/Preview) or .env.local for local dev."
   );
 }
 
