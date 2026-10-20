@@ -786,14 +786,25 @@ function Home() {
           <span>▶️</span> RESUME CHASE
         </button>
 
-        {/* Restart Button */}
-        <button
-          type="button"
-          id="btn-pause-restart"
-          className="w-full py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-200 transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-        >
-          <span>🔄</span> Restart Run
-        </button>
+        <div className="grid grid-cols-2 gap-2">
+          {/* Home Button */}
+          <button
+            type="button"
+            id="btn-pause-home"
+            className="w-full py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-200 transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+          >
+            <span>🏠</span> <span>Home</span>
+          </button>
+
+          {/* Restart Button */}
+          <button
+            type="button"
+            id="btn-pause-restart"
+            className="w-full py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-200 transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+          >
+            <span>🔄</span> <span>Restart</span>
+          </button>
+        </div>
 
         {/* Sound Toggle Button */}
         <button
@@ -849,13 +860,23 @@ function Home() {
           BAIL OUT / RETRY CHASE
         </button>
 
-        <button
-          type="button"
-          id="btn-share-score"
-          className="w-full py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-200 transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-        >
-          <span id="share-btn-text">📤 Share</span>
-        </button>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            id="btn-home"
+            className="w-full py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-200 transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shadow-md"
+          >
+            <span>🏠</span> <span>Home</span>
+          </button>
+
+          <button
+            type="button"
+            id="btn-share-score"
+            className="w-full py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-200 transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shadow-md"
+          >
+            <span id="share-btn-text">📤 Share</span>
+          </button>
+        </div>
 
         <button
           type="button"

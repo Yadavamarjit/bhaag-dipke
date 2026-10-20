@@ -2889,6 +2889,8 @@ import * as THREE from "three";
 
       bindClick('btn-start', startCutsceneIntro);
       bindClick('btn-restart', startCutsceneIntro);
+      bindClick('btn-home', returnToMenu);
+      bindClick('btn-pause-home', returnToMenu);
       bindClick('btn-pause-game', pauseGame);
       bindClick('btn-resume-game', resumeGame);
       bindClick('btn-pause-restart', () => {
@@ -3077,6 +3079,111 @@ import * as THREE from "three";
         const overlay = document.getElementById('countdown-overlay');
         if (overlay) overlay.classList.add('hidden');
       }
+    }
+
+    function returnToMenu() {
+      audio.resetGameOverSound();
+      currentGameState = STATE.MENU;
+
+      player.laneIndex = 1;
+      player.targetX = 0;
+      player.x = 0;
+      player.y = 0;
+      player.z = 0;
+      player.vy = 0;
+      player.vx = 0;
+      player.isGrounded = true;
+      player.isSliding = false;
+      player.speed = player.baseSpeed;
+      player.distance = 0;
+      player.coins = 0;
+      player.powerup = null;
+      player.powerupTimer = 0;
+      player.isFlying = false;
+      player.policeGap = 7.5;
+      lastSpawnZ = -40;
+      hasSpawnedEarlyJetpack = false;
+
+      // Reset dipke posture & limbs
+      dipkeGroup.rotation.set(0, 0, 0);
+      dipkeGroup.position.set(0, 0, 0);
+      player.prevZ = 0;
+      player.coyoteLeft = 0.12;
+      player.jumpBuffer = 0;
+      player.landSquash = 0;
+      ragdoll.y = 0;
+      ragdoll.vy = 0;
+      ragdoll.pitch = 0;
+      ragdoll.roll = 0;
+
+      if (dipkeLimbs.leftArm) dipkeLimbs.leftArm.rotation.set(0, 0, 0);
+      if (dipkeLimbs.rightArm) dipkeLimbs.rightArm.rotation.set(0, 0, 0);
+      if (dipkeLimbs.leftLeg) dipkeLimbs.leftLeg.rotation.set(0, 0, 0);
+      if (dipkeLimbs.rightLeg) dipkeLimbs.rightLeg.rotation.set(0, 0, 0);
+      if (dipkeLimbs.head) dipkeLimbs.head.rotation.set(0, 0, 0);
+      if (dipkeLimbs.torso) dipkeLimbs.torso.rotation.set(0, 0, 0);
+      if (dipkeLimbs.leftElbow) dipkeLimbs.leftElbow.rotation.set(0, 0, 0);
+      if (dipkeLimbs.rightElbow) dipkeLimbs.rightElbow.rotation.set(0, 0, 0);
+      if (dipkeLimbs.leftKnee) dipkeLimbs.leftKnee.rotation.set(0, 0, 0);
+      if (dipkeLimbs.rightKnee) dipkeLimbs.rightKnee.rotation.set(0, 0, 0);
+
+      // Reset police officers
+      policeOfficers.forEach((cop) => {
+        cop.group.rotation.set(0, 0, 0);
+        cop.group.visible = true;
+        cop.group.position.set(cop.baseOffsetX, 0, cop.baseOffsetZ);
+        cop.frame = -1;
+        if (cop.mat) {
+          cop.mat.opacity = 1;
+          cop.mat.depthWrite = true;
+        }
+        if (cop.head) {
+          cop.head.rotation.set(0, 0, 0);
+          cop.head.position.y = 2.2;
+          cop.head.position.z = 0;
+        }
+      });
+
+      // Clear caught & flight UI
+      if (caughtTrio) caughtTrio.visible = false;
+      if (policeLightRed) policeLightRed.intensity = 0;
+      if (policeLightBlue) policeLightBlue.intensity = 0;
+      if (dipkeShadow) dipkeShadow.visible = true;
+
+      if (jetpackModel) jetpackModel.visible = false;
+      document.getElementById('flight-fx')?.classList.add('opacity-0');
+      document.getElementById('speed-fx')?.classList.add('opacity-0');
+      document.getElementById('hud-powerup')?.classList.add('hidden');
+
+      obstacles.forEach(o => scene.remove(o));
+      obstacles = [];
+      collectibles.forEach(c => scene.remove(c));
+      collectibles = [];
+
+      roadSegments.forEach((seg, idx) => {
+        seg.position.z = -idx * SEGMENT_LENGTH;
+      });
+
+      // Reset camera to menu view
+      camera.position.set(0, 4.3, 7.5);
+      camera.lookAt(0, 1.5, -6);
+
+      // Toggle UI modals to reveal main menu
+      document.getElementById('gameover-modal')?.classList.add('hidden');
+      document.getElementById('pause-modal')?.classList.add('hidden');
+      document.getElementById('countdown-overlay')?.classList.add('hidden');
+      document.getElementById('hud')?.classList.add('hidden');
+      document.getElementById('menu-modal')?.classList.remove('hidden');
+
+      // Refresh totals displayed on menu
+      try {
+        const bestDist = localStorage.getItem('bhaag_best_dist') || '0';
+        const totalCoins = parseInt(localStorage.getItem('bhaag_total_cash') || localStorage.getItem('bhaag_best_coins') || '0', 10);
+        const bestDistEl = document.getElementById('menu-best-dist');
+        if (bestDistEl) bestDistEl.textContent = bestDist + ' m';
+        const bestCoinsEl = document.getElementById('menu-best-coins');
+        if (bestCoinsEl) bestCoinsEl.textContent = '₹' + (totalCoins * 100).toLocaleString('en-IN');
+      } catch (e) {}
     }
 
     function startCutsceneIntro() {
