@@ -755,6 +755,7 @@ import * as THREE from "three";
 
     let jetpackModel = null;
     let jetpackFlames = [];
+    let hasSpawnedEarlyJetpack = false;
     let metroTrain = null;
     let metroTrainActive = false;
     let metroTrainZ = 0;
@@ -2686,8 +2687,15 @@ import * as THREE from "three";
       const obstacleTypes = ['BUS', 'AUTO', 'BARRICADE'];
       const canSpawnObstacles = (player.distance >= 40);
 
-      // In the free open lane, spawn items with 50% increased availability
-      if (Math.random() < 0.12) {
+      // Guaranteed early Flying Jetpack at ~80m (exactly one early introduction)
+      const approxDistAtZ = Math.abs(zPos) * 0.25;
+      if (!hasSpawnedEarlyJetpack && approxDistAtZ >= 80) {
+        hasSpawnedEarlyJetpack = true;
+        const p = createPowerupMesh('FLYING_JETPACK');
+        p.position.set(LANES[freeLane], 1.25, zPos);
+        scene.add(p);
+        collectibles.push(p);
+      } else if (Math.random() < 0.12) {
         spawnPowerup(freeLane, zPos);
       } else if (Math.random() < 0.45) {
         // Increased cash availability by 50%
@@ -3093,6 +3101,7 @@ import * as THREE from "three";
       player.powerupTimer = 0;
       player.isFlying = false;
       player.policeGap = 3.6;
+      hasSpawnedEarlyJetpack = false;
       lastSpawnZ = -40;
 
       // Reset dipke posture & limbs
