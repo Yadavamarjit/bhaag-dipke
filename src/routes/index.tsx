@@ -478,7 +478,7 @@ function Home() {
           <div className="text-xs font-bungee uppercase text-yellow-400 mb-2 flex items-center gap-1.5">
             <span>🕹️</span> CONTROLS (नियंत्रण)
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <div className="bg-black/50 p-2.5 rounded-xl border border-white/10">
               <div className="font-bold text-amber-300 mb-0.5">⬅️ ➡️ Lane Switch</div>
               <div className="text-gray-300 text-[11px]">Swipe Left / Right or press <kbd className="px-1 py-0.5 bg-white/20 rounded font-mono">A</kbd> / <kbd className="px-1 py-0.5 bg-white/20 rounded font-mono">D</kbd></div>
@@ -486,10 +486,6 @@ function Home() {
             <div className="bg-black/50 p-2.5 rounded-xl border border-white/10">
               <div className="font-bold text-emerald-300 mb-0.5">⬆️ Jump (कूदें)</div>
               <div className="text-gray-300 text-[11px]">Swipe Up or press <kbd className="px-1 py-0.5 bg-white/20 rounded font-mono">W</kbd> / <kbd className="px-1 py-0.5 bg-white/20 rounded font-mono">Space</kbd> to clear barricades</div>
-            </div>
-            <div className="bg-black/50 p-2.5 rounded-xl border border-white/10">
-              <div className="font-bold text-sky-300 mb-0.5">⬇️ Slide (फिसलें)</div>
-              <div className="text-gray-300 text-[11px]">Swipe Down or press <kbd className="px-1 py-0.5 bg-white/20 rounded font-mono">S</kbd> to duck under overhead barriers</div>
             </div>
           </div>
         </div>

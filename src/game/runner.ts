@@ -70,6 +70,28 @@ import * as THREE from "three";
         if (!this.ctx || !this[rawProp] || this[bufferProp]) return;
         const copy = this[rawProp].slice(0);
         this.ctx.decodeAudioData(copy).then((buffer) => {
+          if (bufferProp === 'endBuffer') {
+            try {
+              // Peak normalize hosh.mp3 so quiet recording is maximized
+              let peak = 0;
+              for (let c = 0; c < buffer.numberOfChannels; c++) {
+                const data = buffer.getChannelData(c);
+                for (let i = 0; i < data.length; i++) {
+                  const val = Math.abs(data[i]);
+                  if (val > peak) peak = val;
+                }
+              }
+              if (peak > 0 && peak < 0.95) {
+                const boost = 0.98 / peak;
+                for (let c = 0; c < buffer.numberOfChannels; c++) {
+                  const data = buffer.getChannelData(c);
+                  for (let i = 0; i < data.length; i++) {
+                    data[i] *= boost;
+                  }
+                }
+              }
+            } catch (err) {}
+          }
           this[bufferProp] = buffer;
         }).catch(() => {});
       }
@@ -378,15 +400,26 @@ import * as THREE from "three";
           try {
             const src = this.ctx.createBufferSource();
             src.buffer = this.endBuffer;
+            // Web Audio DynamicsCompressor + Gain Node for high-volume punch without clipping
+            const compressor = this.ctx.createDynamicsCompressor();
+            compressor.threshold.value = -16;
+            compressor.knee.value = 24;
+            compressor.ratio.value = 6;
+            compressor.attack.value = 0.003;
+            compressor.release.value = 0.25;
+
             const gain = this.ctx.createGain();
-            gain.gain.value = 1.0;
-            src.connect(gain);
+            gain.gain.value = 2.8; // High volume boost
+
+            src.connect(compressor);
+            compressor.connect(gain);
             gain.connect(this.ctx.destination);
             src.start();
           } catch (e) {}
         } else {
           try {
             const audioEl = new Audio('/sfx/hosh.mp3');
+            audioEl.volume = 1.0;
             audioEl.play().catch(() => {});
           } catch (e) {}
         }
@@ -2972,14 +3005,8 @@ import * as THREE from "three";
     }
 
     function slide() {
-      if (currentGameState !== STATE.PLAYING) return;
-      if (player.isGrounded && !player.isSliding) {
-        player.isSliding = true;
-        player.slideTimer = 0.7;
-        audio.playSlide();
-      } else if (!player.isGrounded) {
-        player.vy = -16;
-      }
+      // Slide option disabled per user request
+      return;
     }
 
     function startCountdown() {
@@ -3538,7 +3565,7 @@ import * as THREE from "three";
         case 'ArrowLeft': case 'KeyA': moveLane(-1); break;
         case 'ArrowRight': case 'KeyD': moveLane(1); break;
         case 'ArrowUp': case 'KeyW': case 'Space': jump(); break;
-        case 'ArrowDown': case 'KeyS': slide(); break;
+        // ArrowDown and KeyS slide disabled
         default: break;
       }
     }
