@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { retainGame } from "@/game/runner";
+import { submitFeedbackServerFn, recordVisitorServerFn } from "@/lib/server/feedback";
 
 export const Route = createFileRoute("/")({ component: Home });
 
@@ -131,10 +132,8 @@ function Home() {
             const referrer = document.referrer || "";
             const referredBy = incomingRef || localStorage.getItem("bhaag_referred_by") || undefined;
 
-            await fetch("https://ydvamar.online/api/game/visitor", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
+            await recordVisitorServerFn({
+              data: {
                 ...geo,
                 userId: uid,
                 referredBy,
@@ -144,7 +143,7 @@ function Home() {
                 device,
                 screenResolution,
                 referrer,
-              }),
+              },
             });
 
             localStorage.setItem("bhaag_visited", "true");
@@ -172,20 +171,18 @@ function Home() {
       const dist = document.getElementById("go-dist")?.textContent || document.getElementById("hud-distance")?.textContent || "0";
       const coins = document.getElementById("go-coins")?.textContent || document.getElementById("hud-coins")?.textContent || "0";
 
-      const res = await fetch("https://ydvamar.online/api/game/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const res = await submitFeedbackServerFn({
+        data: {
           feedback: feedbackText.trim(),
           name: feedbackName.trim() || undefined,
           email: feedbackEmail.trim() || undefined,
           distance: parseInt(dist.replace(/[^\d]/g, ""), 10) || 0,
           coins: parseInt(coins.replace(/[^\d]/g, ""), 10) || 0,
           device,
-        }),
+        },
       });
 
-      if (!res.ok) throw new Error("Server error");
+      if (!res?.success) throw new Error(res?.error || "Server error");
 
       setFeedbackSuccess(true);
       setTimeout(() => {
@@ -733,8 +730,8 @@ function Home() {
               </div>
             </div>
 
-            <p className="text-[10px] sm:text-[11px] text-amber-200/80 italic">
-              ✨ Optional: We will let you know once your suggestion is addressed or fixed!
+            <p className="text-[10px] sm:text-[11px] text-amber-200/90 font-medium bg-amber-950/40 border border-amber-500/30 p-2 rounded-xl">
+              ✉️ If your email is provided, then we will let you know once your suggestion is addressed or fixed!
             </p>
 
             {feedbackError && (

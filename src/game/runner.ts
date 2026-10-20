@@ -2815,9 +2815,8 @@ import * as THREE from "three";
             moveLane(dx > 0 ? 1 : -1);
           } else if (dy < 0) {
             jump();
-          } else if (dy > 0) {
-            slide();
           }
+          // swipe-down does NOT slide on mobile — removed intentionally
         } else if (duration < 350) {
           // Tap zones on screen: left 40% dodges left, right 40% dodges right, center jumps
           const w = window.innerWidth;
@@ -3539,6 +3538,7 @@ import * as THREE from "three";
         case 'ArrowLeft': case 'KeyA': moveLane(-1); break;
         case 'ArrowRight': case 'KeyD': moveLane(1); break;
         case 'ArrowUp': case 'KeyW': case 'Space': jump(); break;
+        case 'ArrowDown': case 'KeyS': slide(); break;
         default: break;
       }
     }
